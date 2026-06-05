@@ -1,23 +1,23 @@
 # UniYouth
 
-UniYouth la he thong quan ly hoat dong doan hoi va diem ren luyen, gom 3 phan chinh:
+UniYouth là hệ thống quản lý hoạt động đoàn hội và điểm rèn luyện, gồm 3 phần chính:
 
-- `backend-api/`: ASP.NET Core Web API, database, notification, SignalR, background jobs va face-service Python.
-- `web-admin/`: ASP.NET Core MVC/Razor Web Admin cho quan tri vien.
-- `mobile-app/`: Flutter mobile app cho nguoi dung.
+- `backend-api/`: ASP.NET Core Web API, cơ sở dữ liệu, notification, SignalR, background jobs và face-service Python.
+- `web-admin/`: ASP.NET Core MVC/Razor Web Admin cho quản trị viên.
+- `mobile-app/`: Flutter mobile app cho người dùng.
 
-Repo public nay chi chua source code can thiet de tham khao va chay dev. Cac file local/ignored nhu `bin/`, `obj/`, `.vs/`, `.dart_tool/`, `build/`, `secrets/`, virtualenv Python, APK va cache khong duoc dua len repo nay.
+Repo public này chỉ chứa source code cần thiết để tham khảo và chạy dev. Các file local/ignored như `bin/`, `obj/`, `.vs/`, `.dart_tool/`, `build/`, `secrets/`, virtualenv Python, APK và cache không được đưa lên repo này.
 
-## Prerequisites
+## Yêu Cầu
 
 - .NET SDK 8
 - SQL Server
 - Flutter SDK
-- Android Studio hoac Android SDK neu chay mobile Android
-- Python 3.11+ neu chay face-service
+- Android Studio hoặc Android SDK nếu chạy mobile Android
+- Python 3.11+ nếu chạy face-service
 - Git
 
-## Cau truc
+## Cấu Trúc
 
 ```text
 UniYouth/
@@ -47,16 +47,16 @@ dotnet test
 dotnet run --project UniYouth.Api
 ```
 
-Backend can cau hinh runtime rieng cho dev, vi du:
+Backend cần cấu hình runtime riêng cho dev, ví dụ:
 
 - SQL Server connection string
 - JWT settings
 - SMTP/Gmail settings
-- Firebase/FCM settings neu dung push notification
-- Public URL / Cloudflare tunnel neu dung callback hoac asset URL public
-- Face-service URL neu dung xac thuc khuon mat
+- Firebase/FCM settings nếu dùng push notification
+- Public URL / Cloudflare tunnel nếu dùng callback hoặc asset URL public
+- Face-service URL nếu dùng xác thực khuôn mặt
 
-Khong commit secret that len repo public. Tao file config local hoac dung environment variables tren may dev.
+Không commit secret thật lên repo public. Hãy tạo file config local hoặc dùng environment variables trên máy dev.
 
 ## Web Admin
 
@@ -67,7 +67,7 @@ dotnet build
 dotnet run --project UniYouth.Admin
 ```
 
-Web Admin goi API tu backend. Can cau hinh `ApiBaseUrl` tro den URL backend dang chay tren may dev.
+Web Admin gọi API từ backend. Cần cấu hình `ApiBaseUrl` trỏ đến URL backend đang chạy trên máy dev.
 
 ## Mobile App
 
@@ -79,12 +79,12 @@ flutter test
 flutter run
 ```
 
-Mobile app can cau hinh API base URL phu hop voi moi truong chay:
+Mobile app cần cấu hình API base URL phù hợp với môi trường chạy:
 
-- Android emulator thuong dung `10.0.2.2` de tro ve localhost cua may host.
-- Thiet bi that can dung IP LAN hoac public URL cua backend.
+- Android emulator thường dùng `10.0.2.2` để trỏ về localhost của máy host.
+- Thiết bị thật cần dùng IP LAN hoặc public URL của backend.
 
-Neu dung Firebase/FCM, can bo sung file cau hinh Firebase local theo tung platform.
+Nếu dùng Firebase/FCM, cần bổ sung file cấu hình Firebase local theo từng platform.
 
 ## Face Service
 
@@ -96,28 +96,28 @@ pip install -r requirements.txt
 python -m compileall .
 ```
 
-Chay service theo entrypoint/thiet lap hien co trong thu muc `services/face-service/`. Thu muc virtualenv local khong duoc commit trong repo public.
+Chạy service theo entrypoint/thiết lập hiện có trong thư mục `services/face-service/`. Thư mục virtualenv local không được commit trong repo public.
 
 ## Database
 
-Database scripts nam trong:
+Database scripts nằm trong:
 
 ```text
 backend-api/DatabaseScripts/
 ```
 
-Chay cac script phu hop voi database dev cua ban truoc khi start backend. Kiem tra connection string local truoc khi chay migration/script.
+Chạy các script phù hợp với database dev của bạn trước khi start backend. Kiểm tra connection string local trước khi chạy migration/script.
 
-## Ghi chu bao mat
+## Ghi Chú Bảo Mật
 
-Repo nay la public nen khong chua:
+Repo này là public nên không chứa:
 
-- Mat khau database
+- Mật khẩu database
 - JWT secret
 - SMTP password
 - Firebase service account
 - Cloudflare tunnel credentials
 - File `secrets/`
-- Build output va cache local
+- Build output và cache local
 
-Neu clone repo nay de chay dev, hay tao cau hinh runtime rieng tren may local.
+Nếu clone repo này để chạy dev, hãy tạo cấu hình runtime riêng trên máy local.
