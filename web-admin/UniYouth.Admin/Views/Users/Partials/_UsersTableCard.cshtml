@@ -1,0 +1,186 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Users.UserManagementViewModel
+@{
+    var usersPage = Model.UsersPage;
+    var items = usersPage?.Items ?? new List<UniYouth.Admin.Models.DTOs.AdminUsers.AdminUserListItemDto>();
+    var pageNumber = usersPage?.PageNumber > 0 ? usersPage.PageNumber : 1;
+    var pageSize = usersPage?.PageSize > 0 ? usersPage.PageSize : 20;
+    var totalPages = usersPage?.TotalPages > 0 ? usersPage.TotalPages : 1;
+}
+
+<div class="card mb-4 uy-section-card">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center uy-section-card-header">
+        <strong class="uy-section-card-title"><i class="bi bi-table me-2"></i>Danh sách người dùng</strong>
+        <span class="small text-muted">Tổng: <strong>@(usersPage?.TotalCount ?? 0)</strong></span>
+    </div>
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3 align-items-end mb-3 uy-filter-shell">
+            <div class="col-md-6">
+                <label class="form-label">Tìm kiếm</label>
+                <input class="form-control" name="search" value="@Model.Search" placeholder="Tìm theo mã/tài khoản, họ tên, email..." aria-label="Tìm người dùng theo mã tài khoản, họ tên hoặc email" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-select" name="status" aria-label="Lọc người dùng theo trạng thái">
+                    <option value="" selected="@(Model.Status == null ? "selected" : null)">Tất cả</option>
+                    <option value="1" selected="@(Model.Status == 1 ? "selected" : null)">Hoạt động</option>
+                    <option value="0" selected="@(Model.Status == 0 ? "selected" : null)">Không hoạt động</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Role</label>
+                <select class="form-select" name="role" aria-label="Lọc người dùng theo vai trò">
+                    <option value="" selected="@(string.IsNullOrWhiteSpace(Model.Role) ? "selected" : null)">Tất cả</option>
+                    <option value="Admin" selected="@(string.Equals(Model.Role, "Admin", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">Admin</option>
+                    <option value="CanBo" selected="@(string.Equals(Model.Role, "CanBo", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">Cán bộ</option>
+                    <option value="DoanVien" selected="@(string.Equals(Model.Role, "DoanVien", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">Đoàn viên</option>
+                    <option value="HoiVien" selected="@(string.Equals(Model.Role, "HoiVien", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">Hội viên</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Số dòng</label>
+                <select class="form-select" name="pageSize" aria-label="Chọn số dòng hiển thị người dùng">
+                    <option value="10" selected="@(pageSize == 10 ? "selected" : null)">10</option>
+                    <option value="20" selected="@(pageSize == 20 ? "selected" : null)">20</option>
+                    <option value="50" selected="@(pageSize == 50 ? "selected" : null)">50</option>
+                </select>
+            </div>
+            <div class="col-md-9 text-md-end">
+                <button type="submit" class="btn btn-primary" aria-label="Lọc danh sách người dùng">
+                    <i class="bi bi-search me-1"></i>Lọc
+                </button>
+                <a class="btn btn-outline-secondary" asp-action="Index" aria-label="Xóa bộ lọc danh sách người dùng">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Xóa lọc
+                </a>
+            </div>
+        </form>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="small text-muted">
+                Trang: <strong>@pageNumber</strong> / <strong>@totalPages</strong>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <caption class="visually-hidden">Danh sách người dùng quản trị</caption>
+                <thead>
+                    <tr>
+                        <th class="user-table-id-col">ID</th>
+                        <th>Mã</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Roles</th>
+                        <th>Đơn vị</th>
+                        <th>Trạng thái</th>
+                        <th>Đăng nhập gần nhất</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (items.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="9">
+                                @{
+                                    var emptyStateViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+                                    {
+                                        ["EmptyIcon"] = "bi bi-people",
+                                        ["EmptyTitle"] = "Không có dữ liệu.",
+                                        ["EmptyDescription"] = "Thay đổi bộ lọc hoặc tạo người dùng mới để bắt đầu quản trị tài khoản."
+                                    };
+                                }
+                                <partial name="UI/_EmptyState" view-data="emptyStateViewData" />
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var u in items)
+                        {
+                            var isActive = u.Status.HasValue ? u.Status.Value == 1 : true;
+                            var badge = isActive ? "bg-success" : "bg-secondary";
+                            var label = isActive ? "Hoạt động" : "Không hoạt động";
+
+                            <tr>
+                                <td>@u.UserId</td>
+                                <td>@(u.Code ?? "-")</td>
+                                <td>@(u.FullName ?? "-")</td>
+                                <td>@(u.Email ?? "-")</td>
+                                <td>
+                                    @if (u.Roles != null && u.Roles.Count > 0)
+                                    {
+                                        <span class="small">@string.Join(", ", u.Roles)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="small">
+                                        @(string.IsNullOrWhiteSpace(u.UnitName) ? "-" : u.UnitName)
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(u.InstituteName))
+                                    {
+                                        <div class="small text-muted">@u.InstituteName</div>
+                                    }
+                                </td>
+                                <td><span class="badge @badge">@label</span></td>
+                                <td>
+                                    @if (u.LastLoginDate.HasValue)
+                                    {
+                                        <span class="small">@u.LastLoginDate.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    @{
+                                        var userDisplayName = u.FullName ?? u.Code ?? u.Email ?? u.UserId.ToString();
+                                    }
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="Thao tác người dùng @userDisplayName">
+                                        <a class="btn btn-sm btn-outline-info"
+                                           asp-action="Detail"
+                                           asp-route-id="@u.UserId"
+                                           asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)"
+                                           title="Xem chi tiết"
+                                           aria-label="Xem chi tiết người dùng @userDisplayName">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#updateRolesModal"
+                                                data-user-id="@u.UserId"
+                                                data-user-name="@userDisplayName"
+                                                data-user-role="@(u.Roles?.FirstOrDefault() ?? string.Empty)"
+                                                title="Cập nhật vai trò"
+                                                aria-label="Cập nhật vai trò người dùng @userDisplayName">
+                                            <i class="bi bi-shield-check"></i>
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#updateStatusModal"
+                                                data-user-id="@u.UserId"
+                                                data-user-name="@userDisplayName"
+                                                data-user-status="@(isActive ? 1 : 0)"
+                                                title="Cập nhật trạng thái"
+                                                aria-label="Cập nhật trạng thái người dùng @userDisplayName">
+                                            <i class="bi bi-toggle-on"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Pagination" model="new PaginationViewModel { PageNumber = pageNumber, TotalPages = totalPages }" />
+    </div>
+</div>

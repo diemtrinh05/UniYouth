@@ -1,0 +1,146 @@
+﻿/* ============================================
+   UniYouth Admin - Design Tokens
+   Foundation layer for safe, additive UI refactor.
+   ============================================ */
+
+:root {
+    color-scheme: light;
+
+    --uy-bg: #f8fafc;
+    --uy-surface: #ffffff;
+    --uy-surface-muted: #f8fafc;
+    --uy-surface-subtle: #f1f5f9;
+    --uy-surface-overlay: rgba(255, 255, 255, 0.72);
+
+    --uy-border: #e2e8f0;
+    --uy-border-subtle: #f1f5f9;
+    --uy-border-strong: #cbd5e1;
+
+    --uy-text: #0f172a;
+    --uy-text-muted: #64748b;
+    --uy-text-soft: #94a3b8;
+    --uy-text-inverse: #ffffff;
+    --uy-text-inverse-muted: rgba(255, 255, 255, 0.75);
+    --uy-sidebar-bg: #0f172a;
+    --uy-sidebar-border: rgba(255, 255, 255, 0.14);
+    --uy-sidebar-hover: rgba(255, 255, 255, 0.08);
+    --uy-sidebar-divider: rgba(255, 255, 255, 0.1);
+    --uy-sidebar-heading: rgba(255, 255, 255, 0.46);
+    --uy-sidebar-active-bg: rgba(37, 99, 235, 0.28);
+
+    --uy-primary: #2563eb;
+    --uy-primary-hover: #1d4ed8;
+    --uy-primary-soft: #eff6ff;
+    --uy-primary-border: #bfdbfe;
+
+    --uy-success: #16a34a;
+    --uy-success-soft: #f0fdf4;
+    --uy-success-border: #bbf7d0;
+    --uy-info: #2563eb;
+    --uy-info-soft: #eff6ff;
+    --uy-info-border: #bfdbfe;
+    --uy-warning: #d97706;
+    --uy-warning-soft: #fffbeb;
+    --uy-warning-border: #fed7aa;
+    --uy-danger: #dc2626;
+    --uy-danger-soft: #fef2f2;
+    --uy-danger-border: #fecaca;
+
+    --uy-radius-sm: 0.375rem;
+    --uy-radius-md: 0.5rem;
+    --uy-radius-lg: 0.625rem;
+
+    --uy-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --uy-shadow-md: 0 8px 24px rgba(16, 24, 40, 0.08);
+
+    --uy-focus-ring: 0 0 0 0.2rem rgba(37, 99, 235, 0.16);
+
+    --bs-body-bg: var(--uy-bg);
+    --bs-body-color: var(--uy-text);
+    --bs-border-color: var(--uy-border);
+    --bs-heading-color: var(--uy-text);
+    --bs-secondary-color: var(--uy-text-muted);
+    --bs-tertiary-bg: var(--uy-surface-muted);
+    --bs-primary: var(--uy-primary);
+    --bs-primary-rgb: 37, 99, 235;
+    --bs-secondary-rgb: 100, 116, 139;
+    --bs-success: var(--uy-success);
+    --bs-success-rgb: 22, 163, 74;
+    --bs-info: var(--uy-info);
+    --bs-info-rgb: 37, 99, 235;
+    --bs-warning: var(--uy-warning);
+    --bs-warning-rgb: 217, 119, 6;
+    --bs-danger: var(--uy-danger);
+    --bs-danger-rgb: 220, 38, 38;
+    --bs-light-rgb: 248, 250, 252;
+    --bs-dark-rgb: 15, 23, 42;
+}
+
+[data-theme="dark"] {
+    color-scheme: dark;
+
+    --uy-bg: #0f172a;
+    --uy-surface: #0b1220;
+    --uy-surface-muted: #1f2937;
+    --uy-surface-subtle: #273449;
+    --uy-surface-overlay: rgba(15, 23, 42, 0.72);
+
+    --uy-border: #334155;
+    --uy-border-subtle: #243244;
+    --uy-border-strong: #475569;
+
+    --uy-text: #f8fafc;
+    --uy-text-muted: #cbd5e1;
+    --uy-text-soft: #94a3b8;
+    --uy-text-inverse: #ffffff;
+    --uy-text-inverse-muted: rgba(255, 255, 255, 0.78);
+    --uy-sidebar-bg: #0f172a;
+    --uy-sidebar-border: rgba(255, 255, 255, 0.14);
+    --uy-sidebar-hover: rgba(255, 255, 255, 0.08);
+    --uy-sidebar-divider: rgba(255, 255, 255, 0.1);
+    --uy-sidebar-heading: rgba(255, 255, 255, 0.46);
+    --uy-sidebar-active-bg: rgba(37, 99, 235, 0.24);
+
+    --uy-primary: #2563eb;
+    --uy-primary-hover: #1d4ed8;
+    --uy-primary-soft: rgba(37, 99, 235, 0.18);
+    --uy-primary-border: rgba(37, 99, 235, 0.36);
+
+    --uy-success: #16a34a;
+    --uy-success-soft: rgba(22, 163, 74, 0.16);
+    --uy-success-border: rgba(22, 163, 74, 0.34);
+    --uy-info: #2563eb;
+    --uy-info-soft: rgba(37, 99, 235, 0.18);
+    --uy-info-border: rgba(37, 99, 235, 0.36);
+    --uy-warning: #d97706;
+    --uy-warning-soft: rgba(217, 119, 6, 0.16);
+    --uy-warning-border: rgba(217, 119, 6, 0.34);
+    --uy-danger: #dc2626;
+    --uy-danger-soft: rgba(220, 38, 38, 0.16);
+    --uy-danger-border: rgba(220, 38, 38, 0.34);
+
+    --uy-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+    --uy-shadow-md: 0 12px 32px rgba(0, 0, 0, 0.34);
+
+    --uy-focus-ring: 0 0 0 0.2rem rgba(37, 99, 235, 0.28);
+
+    --bs-body-bg: var(--uy-bg);
+    --bs-body-color: var(--uy-text);
+    --bs-border-color: var(--uy-border);
+    --bs-heading-color: var(--uy-text);
+    --bs-secondary-color: var(--uy-text-muted);
+    --bs-tertiary-bg: var(--uy-surface-muted);
+    --bs-primary: var(--uy-primary);
+    --bs-primary-rgb: 37, 99, 235;
+    --bs-secondary-rgb: 100, 116, 139;
+    --bs-success: var(--uy-success);
+    --bs-success-rgb: 22, 163, 74;
+    --bs-info: var(--uy-info);
+    --bs-info-rgb: 37, 99, 235;
+    --bs-warning: var(--uy-warning);
+    --bs-warning-rgb: 217, 119, 6;
+    --bs-danger: var(--uy-danger);
+    --bs-danger-rgb: 220, 38, 38;
+    --bs-light-rgb: 248, 250, 252;
+    --bs-dark-rgb: 15, 23, 42;
+}

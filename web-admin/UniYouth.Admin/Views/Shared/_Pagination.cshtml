@@ -1,0 +1,97 @@
+@using Microsoft.AspNetCore.Routing
+@model UniYouth.Admin.Models.ViewModels.Shared.PaginationViewModel
+
+@{
+    var totalPages = Model.TotalPages < 1 ? 1 : Model.TotalPages;
+    var pageNumber = Model.PageNumber < 1 ? 1 : Model.PageNumber;
+    if (totalPages <= 1)
+    {
+        return;
+    }
+
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+
+    var baseRoute = new RouteValueDictionary();
+    foreach (var kv in Context.Request.Query)
+    {
+        if (string.Equals(kv.Key, "pageNumber", StringComparison.OrdinalIgnoreCase))
+        {
+            continue;
+        }
+
+        var value = kv.Value.ToString();
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            baseRoute[kv.Key] = value;
+        }
+    }
+
+    string BuildUrl(int page)
+    {
+        var rv = new RouteValueDictionary(baseRoute)
+        {
+            ["pageNumber"] = page
+        };
+
+        return Url.Action(action, controller, rv) ?? "#";
+    }
+
+    var pages = new List<int>();
+    if (totalPages <= 7)
+    {
+        for (var i = 1; i <= totalPages; i++) pages.Add(i);
+    }
+    else
+    {
+        pages.Add(1);
+
+        var start = Math.Max(2, pageNumber - 1);
+        var end = Math.Min(totalPages - 1, pageNumber + 1);
+
+        if (start > 2) pages.Add(-1);
+        for (var i = start; i <= end; i++) pages.Add(i);
+        if (end < totalPages - 1) pages.Add(-1);
+
+        pages.Add(totalPages);
+    }
+}
+
+<nav aria-label="Phân trang" class="uy-pagination mt-3">
+    <ul class="pagination pagination-sm justify-content-center mb-0">
+        <li class="page-item @(pageNumber <= 1 ? "disabled" : "")">
+            <a class="page-link"
+               href="@BuildUrl(Math.Max(1, pageNumber - 1))"
+               aria-label="Trang trước"
+               aria-disabled="@(pageNumber <= 1 ? "true" : null)">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i> Trước
+            </a>
+        </li>
+
+        @foreach (var p in pages)
+        {
+            if (p == -1)
+            {
+                <li class="page-item disabled"><span class="page-link" aria-hidden="true">…</span></li>
+            }
+            else
+            {
+                <li class="page-item @(p == pageNumber ? "active" : "")">
+                    <a class="page-link"
+                       href="@BuildUrl(p)"
+                       aria-label="Trang @p"
+                       aria-current="@(p == pageNumber ? "page" : null)">@p</a>
+                </li>
+            }
+        }
+
+        <li class="page-item @(pageNumber >= totalPages ? "disabled" : "")">
+            <a class="page-link"
+               href="@BuildUrl(Math.Min(totalPages, pageNumber + 1))"
+               aria-label="Trang sau"
+               aria-disabled="@(pageNumber >= totalPages ? "true" : null)">
+                Sau <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</nav>

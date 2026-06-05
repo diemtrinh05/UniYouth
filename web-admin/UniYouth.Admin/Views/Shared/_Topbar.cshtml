@@ -1,0 +1,270 @@
+﻿@inject IConfiguration Configuration
+
+@{
+    var notificationRealtimeEnabled =
+        Configuration.GetValue<bool?>("Notification:EnableRealtime")
+        ?? Configuration.GetValue<bool?>("Notifications:EnableRealtime")
+        ?? false;
+    var notificationHubUrl =
+        Configuration["Notification:HubUrl"]
+        ?? Configuration["Notifications:HubUrl"]
+        ?? string.Empty;
+}
+@*
+    Component Thanh Điều hướng Trên
+    - Chứa tiêu đề trang, breadcrumb và các thao tác của user
+    - Dropdown thông tin user với profile và tùy chọn đăng xuất
+    - Icon thông báo và trạng thái notification
+    - Nút toggle sidebar cho mobile
+    - Hiển thị thông tin user từ JWT token
+*@
+
+<nav class="topbar navbar navbar-expand navbar-light bg-white border-bottom sticky-top uy-topbar" aria-label="Thanh điều hướng trên">
+    <div class="container-fluid">
+        <!-- Toggle Sidebar (Mobile) -->
+        <button type="button" class="btn btn-link d-md-none topbar-icon-button" id="sidebarToggleTop" aria-label="Mở menu">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+
+        <button type="button" class="btn btn-link d-none d-md-block me-3 topbar-icon-button" id="sidebarToggleDesktop" aria-label="Thu gọn menu">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+
+        <!-- Tiêu đề Trang / Breadcrumb -->
+        <!-- Sẽ được set động bởi từng trang thông qua ViewData -->
+        <div class="d-none d-sm-inline-block topbar-title">
+            <h5 class="mb-0 text-gray-800">@ViewData["Title"]</h5>
+        </div>
+
+        <!-- Navbar phía trên -->
+        <ul class="navbar-nav ms-auto">
+            <!-- Dropdown Thông báo -->
+            <li class="nav-item dropdown no-arrow mx-1">
+                <a class="nav-link dropdown-toggle position-relative topbar-icon-link" href="#" id="alertsDropdown"
+                   data-unread-url="@Url.Action("UnreadCountAjax", "Notifications")"
+                   data-list-page-size="5"
+                   data-all-url="@Url.Action("Index", "Notifications")"
+                   data-login-url="@Url.Action("Login", "Account")"
+                   data-realtime-enabled="@(notificationRealtimeEnabled ? "true" : "false")"
+                   data-realtime-hub-url="@notificationHubUrl"
+                   role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Mở menu thông báo">
+                    <i class="bi bi-bell fs-5"></i>
+                    <!-- Badge đếm (tùy chọn) -->
+                    <span id="notificationBadge"
+                          class="badge bg-danger badge-counter topbar-badge position-absolute d-none"
+                          aria-live="polite">0</span>
+                </a>
+                <!-- Dropdown - Thông báo -->
+                <div class="dropdown-menu dropdown-menu-end uy-dropdown-surface animated--grow-in topbar-notification-dropdown"
+                     aria-labelledby="alertsDropdown">
+                    <div class="dropdown-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <span>Thông báo</span>
+                        <small id="notificationDropdownUnreadLabel" class="fw-normal">Chưa đọc: 0</small>
+                    </div>
+
+                    <div id="notificationDropdownLoading" class="px-3 py-3 text-center">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></div>
+                        <div class="small text-muted mt-2">Đang tải thông báo...</div>
+                    </div>
+
+                    <div id="notificationDropdownError" class="px-3 py-3 d-none">
+                        <div id="notificationDropdownErrorText" class="small text-danger mb-2">Không thể tải thông báo.</div>
+                        <button id="notificationDropdownRetryBtn" type="button" class="btn btn-sm btn-outline-danger w-100" aria-label="Thử tải lại thông báo">
+                            Thử lại
+                        </button>
+                    </div>
+
+                    <div id="notificationDropdownEmpty" class="px-3 py-3 text-center d-none">
+                        <i class="bi bi-inbox text-muted fs-4"></i>
+                        <div class="small text-muted mt-2">Chưa có thông báo nào.</div>
+                    </div>
+
+                    <div id="notificationDropdownList" class="topbar-notification-list d-none"></div>
+
+                    <div class="dropdown-divider mb-0"></div>
+                    <div class="px-2 py-2 d-flex gap-2">
+                        <button id="notificationDropdownMarkAllBtn"
+                                type="button"
+                                class="btn btn-sm btn-outline-primary flex-fill"
+                                aria-label="Đánh dấu tất cả thông báo là đã đọc">
+                            Đánh dấu tất cả
+                        </button>
+                        <a class="btn btn-sm btn-light flex-fill text-center"
+                           asp-controller="Notifications"
+                           asp-action="Index"
+                           aria-label="Xem tất cả thông báo">
+                            Xem tất cả
+                    </a>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Dropdown Tin nhắn -->
+            <li class="nav-item dropdown no-arrow mx-1 d-none">
+                <a class="nav-link dropdown-toggle position-relative topbar-icon-link" href="#" id="messagesDropdown"
+                   role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Mở menu tin nhắn">
+                    <i class="bi bi-envelope fs-5"></i>
+                    <span class="badge bg-danger badge-counter topbar-badge position-absolute">7</span>
+                </a>
+            </li>
+
+            <li class="topbar-divider d-none d-sm-block"></li>
+
+            <!-- Dropdown Thông tin User -->
+            <li class="nav-item dropdown no-arrow">
+                <a class="nav-link dropdown-toggle topbar-user-link" href="#" id="userDropdown"
+                   role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Mở menu người dùng">
+                    <span class="me-2 d-none d-lg-inline text-gray-600 small">
+                        @* Hiển thị tên user từ ViewBag (được set bởi BaseController) *@
+                        <strong>@(ViewBag.CurrentUserFullName ?? "Administrator")</strong>
+                        <br>
+                        @* Hiển thị role với badge màu tương ứng *@
+                        @if (ViewBag.IsAdmin == true)
+                        {
+                            <small class="badge bg-danger">Admin</small>
+                        }
+                        else if (ViewBag.IsCanBo == true)
+                        {
+                            <small class="badge bg-primary">Cán bộ</small>
+                        }
+                        else
+                        {
+                            <small class="text-muted">@(ViewBag.CurrentUserRole ?? "User")</small>
+                        }
+                    </span>
+                    <div class="user-avatar">
+                        @{
+                            var topAvatarUrl = ViewBag.CurrentUserAvatarUrl as string;
+                            var topAvatarVer = ViewBag.CurrentUserAvatarVer as string;
+                            string? topAvatarSrc = null;
+                            if (!string.IsNullOrWhiteSpace(topAvatarUrl))
+                            {
+                                topAvatarUrl = Html.ResolveApiAssetUrl(topAvatarUrl);
+                                if (!string.IsNullOrWhiteSpace(topAvatarUrl))
+                                {
+                                    var ver = string.IsNullOrWhiteSpace(topAvatarVer)
+                                        ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString()
+                                        : topAvatarVer;
+                                    topAvatarSrc = topAvatarUrl + (topAvatarUrl.Contains('?') ? "&" : "?") + "v=" + ver;
+                                }
+                            }
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(topAvatarSrc))
+                        {
+                            <img src="@topAvatarSrc" alt="Ảnh đại diện của @(ViewBag.CurrentUserFullName ?? "người dùng")" class="rounded-circle border user-avatar-img" />
+                        }
+                        else
+                        {
+                            <i class="bi bi-person-circle fs-3 text-secondary"></i>
+                        }
+                    </div>
+                </a>
+                <!-- Dropdown - Thông tin User -->
+                <div class="dropdown-menu dropdown-menu-end uy-dropdown-surface animated--grow-in"
+                     aria-labelledby="userDropdown">
+                    <!-- Thông tin user -->
+                    <div class="dropdown-header">
+                        <strong>@(ViewBag.CurrentUserFullName ?? "User")</strong>
+                        <br>
+                        <small class="text-muted">@(ViewBag.CurrentUserRole ?? "Role")</small>
+                    </div>
+
+                    <div class="dropdown-divider"></div>
+
+                    <!-- Link đến profile -->
+                    <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
+                        <i class="bi bi-person me-2 text-gray-400"></i>
+                        Thông tin cá nhân
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <!-- Nút Đăng xuất -->
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                        <i class="bi bi-box-arrow-right me-2 text-gray-400"></i>
+                        Đăng xuất
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Modal Xác nhận Đăng xuất -->
+<!-- Hộp thoại xác nhận trước khi đăng xuất -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutModalLabel">Xác nhận đăng xuất</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng hộp thoại đăng xuất"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Hủy đăng xuất">Hủy</button>
+                <!-- Form đăng xuất với POST method -->
+                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-primary" aria-label="Đăng xuất khỏi hệ thống">Đăng xuất</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@*
+    Cải tiến Tương lai:
+    1. Hiển thị thông tin user thực:
+       - User.Identity.Name cho tên đăng nhập
+       - User.FindFirst(ClaimTypes.Role)?.Value cho vai trò
+       - Avatar của user từ database/profile
+    
+    2. Thông báo real-time:
+       - Sử dụng SignalR cho cập nhật thông báo trực tiếp
+       - Đánh dấu thông báo đã đọc/chưa đọc
+       - Tùy chọn thông báo
+    
+    3. Profile user:
+       - Link đến trang chỉnh sửa profile
+       - Hiển thị hình ảnh avatar thay vì icon
+       - Hiển thị thông tin user bổ sung (email, phòng ban, v.v.)
+    
+    4. Thao tác nhanh:
+       - Thêm các nút thao tác nhanh cho các tác vụ thường dùng
+       - Chức năng tìm kiếm trong topbar
+       - Toggle theme (chế độ tối/sáng)
+*@
+@*
+    CÁCH HIỂN thị THÔNG TIN USER:
+    
+    1. User đăng nhập → JWT token được lưu vào HttpOnly Cookie
+    2. Mỗi request → AdminAuthorizeFilter validate token
+    3. Filter extract user info và lưu vào HttpContext.Items
+    4. BaseController.OnActionExecuting() đọc từ HttpContext
+    5. BaseController set ViewBag.CurrentUser, ViewBag.CurrentUserFullName, etc.
+    6. Topbar.cshtml đọc ViewBag để hiển thị
+    
+    VÍ DỤ SỬ DỤNG VIEWBAG:
+    
+    - ViewBag.CurrentUserFullName: "Nguyễn Văn A"
+    - ViewBag.CurrentUserRole: "Admin" hoặc "CanBo"
+    - ViewBag.IsAdmin: true/false
+    - ViewBag.IsCanBo: true/false
+    
+    HIỂN THỊ ROLE VỚI MÀU KHÁC NHAU:
+    
+    @if (ViewBag.IsAdmin == true)
+    {
+        <span class="badge bg-danger">Admin</span>
+    }
+    else if (ViewBag.IsCanBo == true)
+    {
+        <span class="badge bg-primary">Cán bộ</span>
+    }
+    
+    BẢO MẬT:
+    - Thông tin user được lấy từ JWT token (đã validate)
+    - KHÔNG tin tưởng data từ client-side
+    - Mọi thông tin đều từ server-side (HttpContext.Items)
+*@
+

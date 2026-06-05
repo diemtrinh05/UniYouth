@@ -1,0 +1,54 @@
+﻿.support-chat-card {
+    min-height: 680px;
+}
+
+.support-chat-messages {
+    max-height: 560px;
+    overflow-y: auto;
+    background: var(--uy-surface-muted, #f8fafc);
+}
+
+.support-chat-messages > .d-flex {
+    align-items: flex-start;
+}
+
+.support-chat-bubble {
+    display: inline-flex;
+    flex-direction: column;
+    width: fit-content;
+    min-width: 10rem;
+    max-width: min(68%, 520px);
+    border-radius: 1rem;
+    padding: .85rem 1rem;
+    box-shadow: var(--uy-shadow-sm, 0 1px 2px rgba(16, 24, 40, 0.06));
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.support-chat-content {
+    white-space: pre-line;
+    line-height: 1.45;
+}
+
+.support-chat-bubble-mine {
+    background: var(--uy-primary, #2563eb);
+    color: var(--uy-text-inverse, #fff);
+}
+
+.support-chat-bubble-mine .text-muted {
+    color: var(--uy-text-inverse-muted, rgba(255, 255, 255, .75)) !important;
+}
+
+.support-chat-bubble-other {
+    background: var(--uy-surface, #fff);
+    border: 1px solid var(--uy-border, #e2e8f0);
+}
+
+.support-chat-bubble-mine .support-chat-attachment {
+    color: var(--uy-text-inverse, #fff);
+    font-weight: 600;
+}
+
+.support-chat-bubble-other .support-chat-attachment {
+    font-weight: 600;
+}

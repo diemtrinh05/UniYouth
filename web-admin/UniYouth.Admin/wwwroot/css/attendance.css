@@ -1,0 +1,181 @@
+﻿.attendance-stat-icon {
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+.attendance-empty-icon {
+    color: var(--uy-text-muted, #64748b);
+    font-size: 4rem;
+}
+
+.attendance-inline-note {
+    border: 1px solid var(--uy-border, #e2e8f0);
+    border-radius: var(--uy-radius-lg, 0.625rem);
+    background: var(--uy-surface-muted, #f8fafc);
+    padding: 1rem 1.1rem;
+}
+
+.attendance-inline-note-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--uy-text, #0f172a);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.attendance-inline-note-helper {
+    color: var(--uy-text-muted, #64748b);
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.attendance-header .uy-page-header {
+    margin-bottom: 0.5rem;
+}
+
+.attendance-header-actions {
+    flex: 0 0 auto;
+}
+
+.attendance-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.attendance-table-wrapper > .table {
+    min-width: 1500px;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.attendance-table-wrapper td,
+.attendance-table-wrapper th {
+    vertical-align: middle;
+}
+
+.attendance-table-wrapper .sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: var(--uy-surface, #fff);
+}
+
+.attendance-table-wrapper .sticky-col-1 {
+    left: 0;
+    min-width: 42px;
+    width: 42px;
+}
+
+.attendance-table-wrapper .sticky-col-2 {
+    left: 42px;
+    min-width: 88px;
+    width: 88px;
+}
+
+.attendance-table-wrapper .sticky-col-3 {
+    left: 130px;
+    min-width: 180px;
+    max-width: 220px;
+}
+
+.attendance-table-wrapper thead .sticky-col {
+    z-index: 5;
+    background: var(--uy-surface-muted, #f8fafc);
+}
+
+.attendance-table-wrapper tbody tr.table-success .sticky-col {
+    background-color: var(--uy-success-soft, #f0fdf4) !important;
+}
+
+.attendance-table-wrapper tbody tr.table-danger .sticky-col {
+    background-color: var(--uy-danger-soft, #fef2f2) !important;
+}
+
+.attendance-table-wrapper .col-email {
+    min-width: 220px;
+    max-width: 280px;
+    word-break: break-word;
+}
+
+.attendance-table-wrapper .col-time {
+    min-width: 180px;
+    white-space: nowrap;
+}
+
+.attendance-table-wrapper .col-face {
+    min-width: 160px;
+}
+
+.attendance-table-wrapper .col-ip {
+    min-width: 140px;
+    white-space: nowrap;
+}
+
+.attendance-table-wrapper .col-device {
+    min-width: 190px;
+    max-width: 230px;
+    word-break: break-word;
+}
+
+.attendance-table-wrapper .col-client-device-id {
+    min-width: 220px;
+    max-width: 260px;
+    word-break: break-word;
+}
+
+.attendance-table-wrapper .col-risk {
+    min-width: 170px;
+}
+
+.attendance-table-wrapper .col-distance {
+    min-width: 110px;
+    white-space: nowrap;
+}
+
+.attendance-table-wrapper .col-validity {
+    min-width: 155px;
+    white-space: nowrap;
+}
+
+.attendance-table-wrapper .col-invalid-reason {
+    min-width: 320px;
+    max-width: 420px;
+    word-break: break-word;
+}
+
+.attendance-table-wrapper .col-detail {
+    min-width: 110px;
+    white-space: nowrap;
+}
+
+.attendance-table-wrapper .table-success {
+    background-color: var(--uy-success-soft, #f0fdf4) !important;
+}
+
+.attendance-table-wrapper .table-danger {
+    background-color: var(--uy-danger-soft, #fef2f2) !important;
+}
+
+.attendance-table-wrapper .table tbody tr:hover {
+    opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+    .attendance-header {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    .attendance-header-actions {
+        width: 100%;
+    }
+
+    .attendance-header-actions .btn {
+        width: 100%;
+    }
+}

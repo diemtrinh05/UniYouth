@@ -1,0 +1,29 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Attendance.EventAttendanceListViewModel
+
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="attendance-inline-note mb-0">
+            <div class="attendance-inline-note-title">
+                <i class="bi bi-info-circle"></i>
+                <span>Chú thích</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge bg-success">
+                    <i class="bi bi-check-circle me-1"></i>Xanh lá = Điểm danh hợp lệ
+                </span>
+                <span class="badge bg-danger">
+                    <i class="bi bi-x-circle me-1"></i>Đỏ = Điểm danh không hợp lệ
+                </span>
+                <span class="badge bg-secondary">
+                    <i class="bi bi-person-bounding-box me-1"></i>Có thể mở modal để xem face summary và thiết bị/IP
+                </span>
+                <span class="badge bg-dark">
+                    <i class="bi bi-fire me-1"></i>Critical cần ưu tiên rà soát
+                </span>
+            </div>
+            <small class="attendance-inline-note-helper">
+                Có thể lọc theo risk level và xem modal chi tiết ngay trên trang này.
+            </small>
+        </div>
+    </div>
+</div>

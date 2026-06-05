@@ -1,0 +1,365 @@
+﻿ @model UniYouth.Admin.Models.ViewModels.Reports.EventReportListViewModel
+@{
+    ViewData["Title"] = "Báo cáo thống kê";
+    ViewData["PageIcon"] = "bi bi-graph-up";
+    ViewData["PageSubtitle"] = "Xem thống kê điểm danh và phân tích tỷ lệ tham gia của các sự kiện.";
+
+    var currentSortBy = Model.SortBy;
+    var currentSortDir = Model.SortDir;
+    var sortEventName = "eventName";
+    var sortStartTime = "startTime";
+    var sortTotalRegistrations = "totalRegistrations";
+    var sortValidAttendances = "validAttendances";
+    var sortInvalidAttendances = "invalidAttendances";
+    var sortNotCheckedIn = "notCheckedIn";
+    var sortAttendanceRate = "attendanceRate";
+
+    string GetNextSortDir(string column)
+    {
+        if (string.Equals(currentSortBy, column, StringComparison.OrdinalIgnoreCase))
+        {
+            return string.Equals(currentSortDir, "asc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc";
+        }
+
+        return string.Equals(column, sortEventName, StringComparison.OrdinalIgnoreCase) ? "asc" : "desc";
+    }
+
+    string GetSortIcon(string column)
+    {
+        if (!string.Equals(currentSortBy, column, StringComparison.OrdinalIgnoreCase))
+        {
+            return "bi bi-arrow-down-up text-muted";
+        }
+
+        return string.Equals(currentSortDir, "asc", StringComparison.OrdinalIgnoreCase)
+            ? "bi bi-caret-up-fill text-primary"
+            : "bi bi-caret-down-fill text-primary";
+    }
+}
+
+@* Tiêu đề trang *@
+<partial name="UI/_PageHeader" />
+
+<partial name="_Alerts" />
+
+@* Bộ lọc *@
+<div class="card mb-4 uy-section-card">
+    <div class="card-header bg-white uy-section-card-header">
+        <h5 class="mb-0 uy-section-card-title">
+            <i class="bi bi-funnel me-2"></i>Bộ lọc
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="uy-filter-shell">
+            <input type="hidden" name="pageNumber" value="1" />
+            <input type="hidden" name="pageSize" value="@Model.PageSize" />
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="searchTerm" class="form-label">Tìm kiếm theo tên sự kiện</label>
+                    <input type="text"
+                           class="form-control"
+                           id="searchTerm"
+                           name="searchTerm"
+                           value="@Model.SearchTerm"
+                           placeholder="Nhập tên sự kiện...">
+                </div>
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">Từ ngày</label>
+                    <input type="date"
+                           class="form-control"
+                           id="startDate"
+                           name="startDate"
+                           value="@Model.StartDate?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">Đến ngày</label>
+                    <input type="date"
+                           class="form-control"
+                           id="endDate"
+                           name="endDate"
+                           value="@Model.EndDate?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-2">
+                    <label for="status" class="form-label">Trạng thái</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="" selected='@(Model.Status == null ? "selected" : null)'>Tất cả</option>
+                        <option value="0" selected='@(Model.Status == 0 ? "selected" : null)'>Nháp</option>
+                        <option value="1" selected='@(Model.Status == 1 ? "selected" : null)'>Mở đăng ký</option>
+                        <option value="2" selected='@(Model.Status == 2 ? "selected" : null)'>Đang diễn ra</option>
+                        <option value="3" selected='@(Model.Status == 3 ? "selected" : null)'>Đã kết thúc</option>
+                        <option value="4" selected='@(Model.Status == 4 ? "selected" : null)'>Đã hủy</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="btn-group w-100" role="group" aria-label="Thao tác lọc báo cáo">
+                        <button type="submit" class="btn btn-primary" aria-label="Lọc danh sách báo cáo">
+                            <i class="bi bi-search me-1"></i>Lọc
+                        </button>
+                        @if (Model.HasFilters)
+                        {
+                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary" aria-label="Xóa bộ lọc báo cáo">
+                                <i class="bi bi-x-circle me-1"></i>Xóa
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* Thẻ thống kê tổng quan *@
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        @{
+            var totalEventsMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["MetricLabel"] = "Tổng số sự kiện",
+                ["MetricValue"] = Model.TotalEvents.ToString(),
+                ["MetricIcon"] = "bi bi-calendar-event",
+                ["MetricTone"] = "primary"
+            };
+        }
+        <partial name="UI/_MetricCard" view-data="totalEventsMetricViewData" />
+    </div>
+    <div class="col-md-3">
+        @{
+            var registrationsMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["MetricLabel"] = "Tổng đăng ký",
+                ["MetricValue"] = Model.HasSummary ? Model.TotalRegistrations.ToString() : "—",
+                ["MetricIcon"] = "bi bi-people-fill",
+                ["MetricTone"] = "success"
+            };
+        }
+        <partial name="UI/_MetricCard" view-data="registrationsMetricViewData" />
+    </div>
+    <div class="col-md-3">
+        @{
+            var validMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["MetricLabel"] = "Điểm danh hợp lệ",
+                ["MetricValue"] = Model.HasSummary ? Model.TotalValidAttendances.ToString() : "—",
+                ["MetricIcon"] = "bi bi-check-circle-fill",
+                ["MetricTone"] = "primary"
+            };
+        }
+        <partial name="UI/_MetricCard" view-data="validMetricViewData" />
+    </div>
+    <div class="col-md-3">
+        @{
+            var averageMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["MetricLabel"] = "Tỷ lệ TB",
+                ["MetricValue"] = Model.HasSummary ? Model.AverageAttendanceRateFormatted : "—",
+                ["MetricIcon"] = "bi bi-percent",
+                ["MetricTone"] = "warning"
+            };
+        }
+        <partial name="UI/_MetricCard" view-data="averageMetricViewData" />
+    </div>
+</div>
+
+@* Bảng danh sách báo cáo *@
+<div class="card uy-section-card">
+    <div class="card-header bg-white uy-section-card-header">
+        <h5 class="mb-0 uy-section-card-title">
+            <i class="bi bi-table me-2"></i>Danh sách báo cáo sự kiện
+        </h5>
+    </div>
+    <div class="card-body">
+        @if (Model.EventReports.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle">
+                    <caption class="visually-hidden">Danh sách báo cáo sự kiện</caption>
+                    <thead class="table-light">
+                        <tr>
+                            <th>
+                                <a class="text-decoration-none text-dark"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="1"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   asp-route-searchTerm="@Model.SearchTerm"
+                                   asp-route-startDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-endDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-status="@Model.Status"
+                                   asp-route-sortBy="@sortEventName"
+                                   asp-route-sortDir="@GetNextSortDir(sortEventName)">
+                                    Tên sự kiện
+                                    <i class="@GetSortIcon(sortEventName) ms-1"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a class="text-decoration-none text-dark"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="1"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   asp-route-searchTerm="@Model.SearchTerm"
+                                   asp-route-startDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-endDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-status="@Model.Status"
+                                   asp-route-sortBy="@sortStartTime"
+                                   asp-route-sortDir="@GetNextSortDir(sortStartTime)">
+                                    Thời gian
+                                    <i class="@GetSortIcon(sortStartTime) ms-1"></i>
+                                </a>
+                            </th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Giới hạn</th>
+                            <th class="text-center">
+                                <a class="text-decoration-none text-dark"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="1"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   asp-route-searchTerm="@Model.SearchTerm"
+                                   asp-route-startDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-endDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-status="@Model.Status"
+                                   asp-route-sortBy="@sortTotalRegistrations"
+                                   asp-route-sortDir="@GetNextSortDir(sortTotalRegistrations)">
+                                    Đăng ký
+                                    <i class="@GetSortIcon(sortTotalRegistrations) ms-1"></i>
+                                </a>
+                            </th>
+                            <th class="text-center">
+                                <a class="text-decoration-none text-dark"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="1"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   asp-route-searchTerm="@Model.SearchTerm"
+                                   asp-route-startDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-endDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-status="@Model.Status"
+                                   asp-route-sortBy="@sortValidAttendances"
+                                   asp-route-sortDir="@GetNextSortDir(sortValidAttendances)">
+                                    Hợp lệ
+                                    <i class="@GetSortIcon(sortValidAttendances) ms-1"></i>
+                                </a>
+                            </th>
+                            <th class="text-center">
+                                <a class="text-decoration-none text-dark"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="1"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   asp-route-searchTerm="@Model.SearchTerm"
+                                   asp-route-startDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-endDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-status="@Model.Status"
+                                   asp-route-sortBy="@sortInvalidAttendances"
+                                   asp-route-sortDir="@GetNextSortDir(sortInvalidAttendances)">
+                                    Không hợp lệ
+                                    <i class="@GetSortIcon(sortInvalidAttendances) ms-1"></i>
+                                </a>
+                            </th>
+                            <th class="text-center">
+                                <a class="text-decoration-none text-dark"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="1"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   asp-route-searchTerm="@Model.SearchTerm"
+                                   asp-route-startDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-endDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-status="@Model.Status"
+                                   asp-route-sortBy="@sortNotCheckedIn"
+                                   asp-route-sortDir="@GetNextSortDir(sortNotCheckedIn)">
+                                    Vắng mặt
+                                    <i class="@GetSortIcon(sortNotCheckedIn) ms-1"></i>
+                                </a>
+                            </th>
+                            <th class="text-center">
+                                <a class="text-decoration-none text-dark"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="1"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   asp-route-searchTerm="@Model.SearchTerm"
+                                   asp-route-startDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-endDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                                   asp-route-status="@Model.Status"
+                                   asp-route-sortBy="@sortAttendanceRate"
+                                   asp-route-sortDir="@GetNextSortDir(sortAttendanceRate)">
+                                    Tỷ lệ
+                                    <i class="@GetSortIcon(sortAttendanceRate) ms-1"></i>
+                                </a>
+                            </th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var report in Model.PagedEventReports)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@report.EventName</strong>
+                                </td>
+                                <td>
+                                    <small class="text-muted">@report.StartTimeFormatted</small>
+                                </td>
+                                <td>
+                                    <span class="@report.StatusBadgeClass">@report.StatusDisplay</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-muted">@report.MaxParticipantsDisplay</span>
+                                </td>
+                                <td class="text-center">
+                                    <strong>@report.TotalRegistrations</strong>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-success">@report.ValidAttendances</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-danger">@report.InvalidAttendances</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-warning text-dark">@report.NotCheckedIn</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="@report.AttendanceRateBadgeClass">
+                                        @report.AttendanceRateFormatted
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="@Url.Action("Detail", new { eventId = report.EventId })"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Xem chi tiết báo cáo"
+                                       aria-label="Xem chi tiết báo cáo sự kiện @report.EventName">
+                                        <i class="bi bi-eye me-1"></i>Chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @* Pagination *@
+            <partial name="_Pagination" model="new PaginationViewModel { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages }" />
+        }
+        else
+        {
+            var emptyStateViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["EmptyIcon"] = "bi bi-inbox",
+                ["EmptyTitle"] = Model.HasFilters
+                    ? "Không tìm thấy sự kiện nào phù hợp với bộ lọc"
+                    : "Chưa có báo cáo sự kiện nào",
+                ["EmptyDescription"] = Model.HasFilters
+                    ? "Thử thay đổi điều kiện lọc để xem thêm báo cáo."
+                    : "Khi có dữ liệu sự kiện, báo cáo thống kê sẽ hiển thị tại đây."
+            };
+            <partial name="UI/_EmptyState" view-data="emptyStateViewData" />
+            <div class="text-center">
+                @if (Model.HasFilters)
+                {
+                    <a href="@Url.Action("Index")" class="btn btn-outline-primary mt-2" aria-label="Xóa bộ lọc báo cáo trong trạng thái trống">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Xóa bộ lọc
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/reports.js" asp-append-version="true"></script>
+}

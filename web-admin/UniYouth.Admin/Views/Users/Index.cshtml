@@ -1,0 +1,219 @@
+﻿@using System.Text.Json
+@model UniYouth.Admin.Models.ViewModels.Users.UserManagementViewModel
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    ViewData["PageIcon"] = "bi bi-people";
+    ViewData["PageSubtitle"] = "Quản trị tài khoản, vai trò và trạng thái người dùng.";
+    var createdUserSummaryJson = TempData["CreatedUserSummary"]?.ToString();
+    var lastAdminUserApiData = TempData["LastAdminUserApiData"]?.ToString();
+    string? createdCode = null;
+    string? createdInitialPassword = null;
+    string? createdInitialStatus = null;
+    var mustChangePassword = false;
+    var nextSteps = new List<string>();
+
+    if (!string.IsNullOrWhiteSpace(createdUserSummaryJson))
+    {
+        using var createdUserSummaryDoc = JsonDocument.Parse(createdUserSummaryJson);
+        var root = createdUserSummaryDoc.RootElement;
+
+        if (root.TryGetProperty("code", out var codeElement))
+        {
+            createdCode = codeElement.GetString();
+        }
+
+        if (root.TryGetProperty("initialPassword", out var passwordElement))
+        {
+            createdInitialPassword = passwordElement.GetString();
+        }
+
+        if (root.TryGetProperty("initialStatus", out var statusElement))
+        {
+            createdInitialStatus = statusElement.GetString();
+        }
+
+        if (root.TryGetProperty("mustChangePassword", out var mustChangePasswordElement) &&
+            (mustChangePasswordElement.ValueKind == JsonValueKind.True || mustChangePasswordElement.ValueKind == JsonValueKind.False))
+        {
+            mustChangePassword = mustChangePasswordElement.GetBoolean();
+        }
+
+        if (root.TryGetProperty("nextSteps", out var nextStepsElement) && nextStepsElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var step in nextStepsElement.EnumerateArray())
+            {
+                var value = step.GetString();
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    nextSteps.Add(value);
+                }
+            }
+        }
+    }
+}
+
+<partial name="_Alerts" />
+
+<partial name="UI/_PageHeader" />
+
+<partial name="Partials/_UsersTableCard" model="Model" />
+
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4 uy-section-card">
+            <div class="card-header bg-light uy-section-card-header">
+                <strong class="uy-section-card-title"><i class="bi bi-person-plus me-2"></i>Tạo người dùng</strong>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrWhiteSpace(createdCode))
+                {
+                    <div class="alert alert-success border">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-person-check fs-4"></i>
+                            <div>
+                                <div class="fw-semibold mb-2">Tạo tài khoản thành công. Các bước tiếp theo đã xác định.</div>
+                                <div class="row g-3 mb-2">
+                                    <div class="col-md-4">
+                                        <div class="small text-muted">Mã tài khoản</div>
+                                        <div class="fw-semibold">@createdCode</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="small text-muted">Mật khẩu khởi tạo</div>
+                                        <div class="fw-semibold">@createdInitialPassword</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="small text-muted">Trạng thái sau tạo</div>
+                                        <div class="fw-semibold">@createdInitialStatus</div>
+                                    </div>
+                                </div>
+                                @if (mustChangePassword)
+                                {
+                                    <div class="alert alert-warning py-2 px-3 mb-2">
+                                        <i class="bi bi-key me-1"></i>Người dùng phải đổi mật khẩu ngay sau lần đăng nhập đầu tiên.
+                                    </div>
+                                }
+                                @if (nextSteps.Count > 0)
+                                {
+                                    <div class="small text-muted mb-1">Checklist bàn giao:</div>
+                                    <ol class="mb-0 ps-3">
+                                        @foreach (var step in nextSteps)
+                                        {
+                                            <li>@step</li>
+                                        }
+                                    </ol>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="user-inline-note mb-3">
+                        <div class="fw-semibold mb-1">
+                            <i class="bi bi-info-circle me-1"></i>Quy ước tài khoản khởi tạo
+                        </div>
+                        <ul class="user-help-list mb-0">
+                            <li>Mã đăng nhập lấy đúng từ trường <strong>Mã/Tài khoản</strong>.</li>
+                            <li>Mật khẩu khởi tạo mặc định hiện tại bằng chính mã tài khoản.</li>
+                            <li>Tài khoản được tạo ở trạng thái <strong>Không hoạt động</strong> và sẽ tự kích hoạt khi người dùng đăng nhập lần đầu.</li>
+                            <li>Admin cần nhắc người dùng đổi mật khẩu ngay sau lần đăng nhập đầu tiên.</li>
+                        </ul>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="CreateUser.Code">Mã/Tài khoản</label>
+                            <input class="form-control" asp-for="CreateUser.Code" />
+                            <span class="text-danger small" asp-validation-for="CreateUser.Code"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="CreateUser.FullName">Họ tên</label>
+                            <input class="form-control" asp-for="CreateUser.FullName" />
+                            <span class="text-danger small" asp-validation-for="CreateUser.FullName"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="createUserPositionId">Chức vụ</label>
+                            <select class="form-select" asp-for="CreateUser.PositionId" id="createUserPositionId">
+                                <option value="" selected="@(Model.CreateUser.PositionId == null ? "selected" : null)">-- Chọn chức vụ --</option>
+                                @foreach (var position in Model.PositionOptions)
+                                {
+                                    <option value="@position.PositionId"
+                                            data-unit-name="@position.UnitName"
+                                            selected="@(Model.CreateUser.PositionId == position.PositionId ? "selected" : null)">
+                                        @position.PositionName
+                                    </option>
+                                }
+                            </select>
+                            <div class="form-text">Đơn vị sẽ tự xác định theo chức vụ đã chọn.</div>
+                            <span class="text-danger small" asp-validation-for="CreateUser.PositionId"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Đơn vị</label>
+                            <input class="form-control" id="createUserUnitName" readonly value="@(Model.PositionOptions.FirstOrDefault(p => p.PositionId == Model.CreateUser.PositionId)?.UnitName ?? string.Empty)" aria-label="Đơn vị tự động theo chức vụ đã chọn" />
+                            <div class="form-text">Giá trị này do hệ thống tự suy ra từ chức vụ.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="CreateUser.Email">Email</label>
+                            <input class="form-control" asp-for="CreateUser.Email" />
+                            <span class="text-danger small" asp-validation-for="CreateUser.Email"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="CreateUser.Phone">SĐT (tùy chọn)</label>
+                            <input class="form-control" asp-for="CreateUser.Phone" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="CreateUser.DateOfBirth">Ngày sinh (tùy chọn)</label>
+                            <input class="form-control" asp-for="CreateUser.DateOfBirth" type="date" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Giới tính (tùy chọn)</label>
+                            <select class="form-select" asp-for="CreateUser.Gender" aria-label="Chọn giới tính người dùng mới">
+                                <option value="">Không xác định</option>
+                                <option value="true">Nam</option>
+                                <option value="false">Nữ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Roles (CSV)</label>
+                            <select class="form-select" asp-for="CreateUser.RolesCsv" aria-label="Chọn vai trò người dùng mới">
+                                <option value="Admin">Admin</option>
+                                <option value="CanBo">Cán bộ</option>
+                                <option value="DoanVien">Đoàn viên</option>
+                                <option value="HoiVien">Hội viên</option>
+                            </select>
+                            <div class="form-text">Giá trị gửi lên API tương ứng: <code>Admin</code>, <code>CanBo</code>, <code>DoanVien</code>, <code>HoiVien</code>.</div>
+                            <span class="text-danger small" asp-validation-for="CreateUser.RolesCsv"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button class="btn btn-primary" type="submit" aria-label="Tạo người dùng mới">
+                            <i class="bi bi-check2-circle me-1"></i>Tạo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="Partials/_UserActionModals" model="Model" />
+
+@if (!string.IsNullOrWhiteSpace(lastAdminUserApiData))
+{
+    <div class="card mt-4 uy-section-card">
+        <div class="card-header bg-light uy-section-card-header">
+            <strong class="uy-section-card-title"><i class="bi bi-braces me-2"></i>Response data (raw)</strong>
+        </div>
+        <div class="card-body">
+            <pre class="mb-0"><code>@lastAdminUserApiData</code></pre>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/users-index.js" asp-append-version="true"></script>
+}

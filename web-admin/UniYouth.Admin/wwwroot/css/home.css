@@ -1,0 +1,401 @@
+﻿/* ============================================
+   UniYouth Admin - Home Styles
+   CSS bổ sung cho trang chủ
+   ============================================ */
+
+/* ============================================
+   Home Header
+   ============================================ */
+.home-header {
+    margin-bottom: 2rem;
+}
+
+.welcome-message h1 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.home-welcome-title {
+    color: var(--uy-text, #0f172a);
+}
+
+.home-welcome-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--uy-radius-md, 0.5rem);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.5rem;
+    color: var(--uy-warning, #d97706);
+    background: var(--uy-warning-soft, #fffbeb);
+    font-size: 1rem;
+    vertical-align: middle;
+}
+
+.home-welcome-name {
+    color: var(--uy-primary, #2563eb);
+}
+
+.home-welcome-meta {
+    color: var(--uy-text-muted, #64748b);
+}
+
+.home-system-badge {
+    color: var(--uy-success, #16a34a);
+    background: var(--uy-success-soft, #f0fdf4);
+    border: 1px solid var(--uy-success-border, #bbf7d0);
+    font-weight: 600;
+}
+
+.pulse-dot {
+    animation: pulse 2s ease-in-out infinite;
+    font-size: 0.5rem;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* ============================================
+   Statistics Cards
+   ============================================ */
+.home-metric-grid .uy-metric-card {
+    height: 100%;
+}
+
+.home-metric-card {
+    height: 100%;
+}
+
+.home-metric-card .uy-metric-card {
+    border-left: 0;
+}
+
+.home-metric-card .uy-metric-body {
+    min-height: 8.75rem;
+}
+
+.home-metric-card .uy-metric-value {
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.stats-card {
+    background: var(--uy-surface, #fff);
+    border: 1px solid var(--uy-border, #e2e8f0);
+    border-radius: var(--uy-radius-md, 0.5rem);
+    box-shadow: var(--uy-shadow-sm, 0 1px 2px rgba(16, 24, 40, 0.06));
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.stats-card:hover {
+    border-color: var(--uy-border-strong, #cbd5e1);
+    box-shadow: var(--uy-shadow-md, 0 8px 24px rgba(16, 24, 40, 0.08));
+}
+
+.stats-card .card-body {
+    padding: 1.5rem;
+}
+
+.stats-card .flex-grow-1 {
+    padding-right: 1rem;
+}
+
+.stats-card-primary {
+    border-left: 4px solid var(--uy-primary, #2563eb);
+}
+
+.stats-card-success {
+    border-left: 4px solid var(--uy-success, #16a34a);
+}
+
+.stats-card-info {
+    border-left: 4px solid var(--uy-info, #2563eb);
+}
+
+.stats-card-warning {
+    border-left: 4px solid var(--uy-warning, #d97706);
+}
+
+.stats-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.stats-label-primary {
+    color: var(--uy-primary, #2563eb);
+}
+
+.stats-label-success {
+    color: var(--uy-success, #16a34a);
+}
+
+.stats-label-info {
+    color: var(--uy-info, #2563eb);
+}
+
+.stats-label-warning {
+    color: var(--uy-warning, #d97706);
+}
+
+.stats-helper {
+    color: var(--uy-text-muted, #64748b);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.stats-helper-success {
+    color: var(--uy-success, #16a34a);
+}
+
+.stats-helper-info {
+    color: var(--uy-info, #2563eb);
+}
+
+.stats-helper-warning {
+    color: var(--uy-warning, #d97706);
+}
+
+.stats-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: var(--uy-radius-md, 0.5rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+}
+
+.stats-icon-primary {
+    color: var(--uy-primary, #2563eb);
+    background: var(--uy-primary-soft, #eff6ff);
+}
+
+.stats-icon-success {
+    color: var(--uy-success, #16a34a);
+    background: var(--uy-success-soft, #f0fdf4);
+}
+
+.stats-icon-info {
+    color: var(--uy-info, #2563eb);
+    background: var(--uy-info-soft, #eff6ff);
+}
+
+.stats-icon-warning {
+    color: var(--uy-warning, #d97706);
+    background: var(--uy-warning-soft, #fffbeb);
+}
+
+/* Counter Animation */
+.counter {
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+/* Fade In Animation */
+.animate-fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s ease;
+}
+
+/* ============================================
+   Chart Container
+   ============================================ */
+.home-chart-frame {
+    position: relative;
+    width: 100%;
+    height: 20rem;
+    min-height: 18rem;
+    max-height: 22rem;
+}
+
+#eventsChart {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* ============================================
+   Quick Action Buttons
+   ============================================ */
+.btn-action {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.btn-action:hover {
+    transform: none;
+}
+
+.btn-action i {
+    font-size: 1.1rem;
+}
+
+/* ============================================
+   Modern Table
+   ============================================ */
+.table-modern thead th {
+    background-color: var(--uy-surface-muted, #f8fafc);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 1rem;
+    color: var(--uy-text-muted, #64748b);
+}
+
+.table-modern tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.event-row {
+    transition: all 0.2s ease;
+}
+
+.event-row:hover {
+    background-color: var(--uy-surface-muted, #f8fafc);
+}
+
+.home-recent-id-col {
+    width: 5%;
+}
+
+.home-event-thumb,
+.home-event-thumb-placeholder {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+}
+
+.home-event-thumb {
+    object-fit: cover;
+}
+
+.home-participation-progress {
+    height: 6px;
+    width: 80px;
+}
+
+.home-period-toggle .btn {
+    font-weight: 600;
+}
+
+.home-qr-preview-image {
+    max-width: 280px;
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+@media (max-width: 768px) {
+    .home-header .welcome-message h1 {
+        font-size: 1.5rem;
+    }
+
+    .stats-card .card-body {
+        padding: 1.25rem !important;
+    }
+
+    .stats-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        font-size: 1.5rem;
+    }
+
+    .stats-card h3 {
+        font-size: 1.5rem;
+    }
+
+    .stats-card .flex-grow-1 {
+        padding-right: 0.75rem;
+    }
+
+    .table-modern thead th,
+    .table-modern tbody td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-action {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .home-chart-frame {
+        height: 17rem;
+        min-height: 16rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .home-period-toggle {
+        width: 100%;
+        margin-top: 0.75rem;
+    }
+
+    .home-period-toggle .btn {
+        flex: 1 1 0;
+    }
+
+    .home-chart-frame {
+        height: 15rem;
+        min-height: 14rem;
+    }
+
+    .stats-card .card-body {
+        padding: 1rem !important;
+    }
+
+    .stats-icon {
+        width: 3rem;
+        height: 3rem;
+        font-size: 1.25rem;
+    }
+
+    .stats-label {
+        font-size: 0.65rem;
+    }
+
+    .stats-card h3 {
+        font-size: 1.25rem;
+    }
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+@media print {
+    .btn,
+    .btn-group,
+    .card-header .btn,
+    .sidebar,
+    .topbar {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+    }
+
+    .card {
+        page-break-inside: avoid;
+    }
+}
+

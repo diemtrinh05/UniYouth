@@ -1,0 +1,45 @@
+@{
+    var title = ViewData["SectionTitle"]?.ToString() ?? string.Empty;
+    var icon = ViewData["SectionIcon"]?.ToString();
+    var subtitle = ViewData["SectionSubtitle"]?.ToString();
+    var bodyPartial = ViewData["SectionBodyPartial"]?.ToString();
+    var actionsPartial = ViewData["SectionActionsPartial"]?.ToString();
+    var bodyModel = ViewData["SectionBodyModel"];
+    var cardClass = ViewData["SectionCardClass"]?.ToString() ?? string.Empty;
+}
+
+<div class="card uy-section-card @cardClass">
+    @if (!string.IsNullOrWhiteSpace(title) || !string.IsNullOrWhiteSpace(actionsPartial))
+    {
+        <div class="card-header bg-light uy-section-card-header d-flex align-items-center justify-content-between gap-3">
+            <div>
+                @if (!string.IsNullOrWhiteSpace(title))
+                {
+                    <strong class="uy-section-card-title">
+                        @if (!string.IsNullOrWhiteSpace(icon))
+                        {
+                            <i class="@icon me-2" aria-hidden="true"></i>
+                        }
+                        @title
+                    </strong>
+                }
+                @if (!string.IsNullOrWhiteSpace(subtitle))
+                {
+                    <div class="small text-muted mt-1">@subtitle</div>
+                }
+            </div>
+            @if (!string.IsNullOrWhiteSpace(actionsPartial))
+            {
+                <div class="uy-section-card-actions">
+                    <partial name="@actionsPartial" model="bodyModel" />
+                </div>
+            }
+        </div>
+    }
+    <div class="card-body">
+        @if (!string.IsNullOrWhiteSpace(bodyPartial))
+        {
+            <partial name="@bodyPartial" model="bodyModel" />
+        }
+    </div>
+</div>

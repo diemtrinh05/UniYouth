@@ -1,0 +1,21 @@
+@{
+    var title = ViewData["Title"]?.ToString() ?? string.Empty;
+    var subtitle = ViewData["PageSubtitle"]?.ToString();
+    var icon = ViewData["PageIcon"]?.ToString();
+}
+
+<div class="uy-page-header">
+    <div class="uy-page-header-main">
+        <h1 class="uy-page-title">
+            @if (!string.IsNullOrWhiteSpace(icon))
+            {
+                <i class="@icon uy-page-title-icon" aria-hidden="true"></i>
+            }
+            @title
+        </h1>
+        @if (!string.IsNullOrWhiteSpace(subtitle))
+        {
+            <p class="uy-page-subtitle">@subtitle</p>
+        }
+    </div>
+</div>

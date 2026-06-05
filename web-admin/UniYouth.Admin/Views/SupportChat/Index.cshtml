@@ -1,0 +1,178 @@
+@model UniYouth.Admin.Models.ViewModels.SupportChat.SupportChatIndexViewModel
+@inject IConfiguration Configuration
+@{
+    ViewData["Title"] = "Hỗ trợ sinh viên";
+    ViewData["PageSubtitle"] = "Theo dõi, lọc và xử lý các yêu cầu hỗ trợ được gửi từ app sinh viên.";
+    ViewData["PageIcon"] = "bi bi-chat-dots";
+    var conversations = Model.Conversations;
+    var apiBaseUrl = (Configuration["ApiSettings:BaseUrl"] ?? string.Empty).TrimEnd('/');
+    var supportChatHubUrl = Configuration["SupportChat:HubUrl"] ?? (string.IsNullOrWhiteSpace(apiBaseUrl) ? string.Empty : $"{apiBaseUrl}/hubs/support-chat");
+}
+
+<partial name="_Alerts" />
+
+<partial name="UI/_PageHeader" />
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        @{
+            ViewData["MetricLabel"] = "Tổng yêu cầu";
+            ViewData["MetricValue"] = Model.TotalCount.ToString();
+            ViewData["MetricHelper"] = "Cuộc trò chuyện hỗ trợ";
+            ViewData["MetricIcon"] = "bi bi-chat-square-text";
+            ViewData["MetricTone"] = "info";
+        }
+        <partial name="UI/_MetricCard" />
+    </div>
+</div>
+
+<div id="supportChatRealtimeBanner"
+     class="alert alert-info d-none align-items-center justify-content-between"
+     role="status"
+     data-support-chat-realtime="list"
+     data-hub-url="@supportChatHubUrl"
+     data-token-url="@Url.Action("RealtimeToken", "SupportChat")">
+    <div>
+        <i class="bi bi-broadcast-pin me-1"></i>
+        Có cập nhật hỗ trợ mới. Hãy tải lại danh sách để xem dữ liệu mới nhất.
+    </div>
+    <button type="button" class="btn btn-sm btn-primary" data-support-chat-reload aria-label="Tải lại danh sách yêu cầu hỗ trợ">Tải lại</button>
+</div>
+
+<div class="card uy-section-card mb-4">
+    <div class="card-header bg-white uy-section-card-header">
+        <strong class="uy-section-card-title"><i class="bi bi-funnel me-2"></i>Bộ lọc</strong>
+    </div>
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3 align-items-end uy-filter-shell">
+            <input type="hidden" name="pageNumber" value="1" />
+            <div class="col-md-3">
+                <label class="form-label">Tìm kiếm</label>
+                <input class="form-control" name="search" value="@Model.Search" placeholder="Tên, mã SV, tiêu đề..." aria-label="Tìm yêu cầu hỗ trợ theo tên, mã sinh viên hoặc tiêu đề" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-select" name="status" aria-label="Lọc yêu cầu hỗ trợ theo trạng thái">
+                    <option value="">Tất cả</option>
+                    <option value="1" selected="@(Model.Status == 1 ? "selected" : null)">Mới</option>
+                    <option value="2" selected="@(Model.Status == 2 ? "selected" : null)">Đang xử lý</option>
+                    <option value="3" selected="@(Model.Status == 3 ? "selected" : null)">Đã đóng</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Ưu tiên</label>
+                <select class="form-select" name="priority" aria-label="Lọc yêu cầu hỗ trợ theo mức ưu tiên">
+                    <option value="">Tất cả</option>
+                    <option value="1" selected="@(Model.Priority == 1 ? "selected" : null)">Bình thường</option>
+                    <option value="2" selected="@(Model.Priority == 2 ? "selected" : null)">Cao</option>
+                    <option value="3" selected="@(Model.Priority == 3 ? "selected" : null)">Khẩn cấp</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Số dòng</label>
+                <select class="form-select" name="pageSize" aria-label="Chọn số dòng hiển thị yêu cầu hỗ trợ">
+                    <option value="10" selected="@(Model.PageSize == 10 ? "selected" : null)">10</option>
+                    <option value="20" selected="@(Model.PageSize == 20 ? "selected" : null)">20</option>
+                    <option value="50" selected="@(Model.PageSize == 50 ? "selected" : null)">50</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button class="btn btn-primary" type="submit" aria-label="Lọc danh sách yêu cầu hỗ trợ">
+                    <i class="bi bi-search me-1"></i>Lọc
+                </button>
+                <a class="btn btn-outline-secondary" asp-action="Index" aria-label="Đặt lại bộ lọc yêu cầu hỗ trợ">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Đặt lại
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card uy-section-card">
+    <div class="card-header bg-white uy-section-card-header d-flex justify-content-between align-items-center">
+        <strong class="uy-section-card-title"><i class="bi bi-list-ul me-2"></i>Danh sách yêu cầu hỗ trợ</strong>
+        <span class="text-muted small">Trang @Model.PageNumber / @Model.TotalPages</span>
+    </div>
+    <div class="card-body p-0">
+        @if (conversations.Any())
+        {
+            <div class="support-chat-table-wrapper">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Danh sách yêu cầu hỗ trợ sinh viên</caption>
+                    <thead class="table-light">
+                        <tr>
+                            <th class="col-id">#</th>
+                            <th class="col-student">Sinh viên</th>
+                            <th class="col-subject">Tiêu đề</th>
+                            <th class="col-status">Trạng thái</th>
+                            <th class="col-priority">Ưu tiên</th>
+                            <th class="col-assignee">Phụ trách</th>
+                            <th class="col-last-message">Tin cuối</th>
+                            <th class="col-action text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in conversations)
+                        {
+                            <tr class="@(item.UnreadCount > 0 ? "table-warning" : "")">
+                                <td class="col-id fw-semibold">#@item.ConversationId</td>
+                                <td class="col-student">
+                                    <div class="fw-semibold">@item.StudentFullName</div>
+                                    <div class="small text-muted">@item.StudentCode</div>
+                                </td>
+                                <td class="col-subject">
+                                    <div class="fw-semibold">@item.Subject</div>
+                                    @if (!string.IsNullOrWhiteSpace(item.LastMessagePreview))
+                                    {
+                                        <div class="small text-muted">@item.LastMessagePreview</div>
+                                    }
+                                </td>
+                                <td class="col-status">
+                                    <span class="badge @(item.Status == 3 ? "bg-secondary" : item.Status == 2 ? "bg-info text-dark" : "bg-success")">
+                                        @item.StatusName
+                                    </span>
+                                    @if (item.UnreadCount > 0)
+                                    {
+                                        <span class="badge bg-danger ms-1">@item.UnreadCount mới</span>
+                                    }
+                                </td>
+                                <td class="col-priority">
+                                    <span class="badge @(item.Priority == 3 ? "bg-danger" : item.Priority == 2 ? "bg-warning text-dark" : "bg-light text-dark border")">
+                                        @item.PriorityName
+                                    </span>
+                                </td>
+                                <td class="col-assignee">@(item.AssignedToFullName ?? "Chưa phân công")</td>
+                                <td class="col-last-message">@(item.LastMessageAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                                <td class="col-action text-end">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       asp-action="Detail"
+                                       asp-route-id="@item.ConversationId"
+                                       aria-label="Xem chi tiết yêu cầu hỗ trợ #@item.ConversationId">
+                                        <i class="bi bi-chat-left-text me-1"></i>Xem
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            ViewData["EmptyIcon"] = "bi bi-inbox";
+            ViewData["EmptyTitle"] = "Chưa có yêu cầu hỗ trợ";
+            ViewData["EmptyDescription"] = "Khi sinh viên gửi yêu cầu hỗ trợ, dữ liệu sẽ hiển thị tại đây.";
+            <partial name="UI/_EmptyState" />
+        }
+    </div>
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer bg-white">
+            <partial name="_Pagination" model="new PaginationViewModel { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages }" />
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/support-chat-realtime.js" asp-append-version="true"></script>
+}

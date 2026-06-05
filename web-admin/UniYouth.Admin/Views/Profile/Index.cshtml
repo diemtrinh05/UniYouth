@@ -1,0 +1,274 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Profile.ProfileIndexViewModel
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+    ViewData["PageSubtitle"] = "Quản lý hồ sơ, avatar và bảo mật tài khoản quản trị.";
+    ViewData["PageIcon"] = "bi bi-person-circle";
+}
+
+<partial name="_Alerts" />
+
+<partial name="UI/_PageHeader" />
+
+<div class="profile-page">
+
+    <div class="card uy-section-card profile-avatar-card text-center">
+        @{
+            var avatarUrl = Model.Profile?.AvatarUrl;
+            var hasAvatar = !string.IsNullOrWhiteSpace(avatarUrl);
+        }
+
+        <div class="avatar-wrapper">
+            @if (hasAvatar)
+            {
+                avatarUrl = Html.ResolveApiAssetUrl(avatarUrl);
+                var cacheBusted = avatarUrl + (avatarUrl!.Contains('?') ? "&" : "?") + "v=" + DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                <img src="@cacheBusted" alt="Ảnh đại diện của @Model.Profile?.FullName" class="avatar-image" />
+            }
+            else
+            {
+                <div class="avatar-placeholder">
+                    <i class="bi bi-person"></i>
+                </div>
+            }
+        </div>
+
+        <form asp-action="UploadAvatar" method="post" enctype="multipart/form-data" class="upload-form">
+            @Html.AntiForgeryToken()
+            <label for="profileAvatarFile" class="visually-hidden">Chọn ảnh đại diện để tải lên</label>
+            <input type="file" id="profileAvatarFile" name="file" class="form-control" accept="image/*" aria-label="Chọn ảnh đại diện để tải lên" />
+            <button type="submit" class="btn btn-upload" aria-label="Tải ảnh đại diện mới">
+                <i class="bi bi-cloud-upload me-2"></i>Tải lên Avatar
+            </button>
+        </form>
+
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card uy-section-card profile-info-card">
+                <h2 class="profile-card-title">
+                    <i class="bi bi-person-badge"></i>
+                    Thông tin hiện tại
+                </h2>
+
+                @if (Model.Profile == null)
+                {
+                    <div class="text-muted text-center py-4">
+                        <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+                        Chưa tải được dữ liệu.
+                    </div>
+                }
+                else
+                {
+                    <div class="profile-info">
+                        <div class="profile-name">@Model.Profile.FullName</div>
+                        <div class="profile-email">@Model.Profile.Email</div>
+                    </div>
+
+                    <dl class="info-list row mb-0">
+                        <dt class="col-5">User ID</dt>
+                        <dd class="col-7">@Model.Profile.UserId</dd>
+
+                        <dt class="col-5">Mã/Tài khoản</dt>
+                        <dd class="col-7">@Model.Profile.Code</dd>
+
+                        <dt class="col-5">Vai trò</dt>
+                        <dd class="col-7">
+                            <span class="badge bg-primary">@Model.Profile.Role</span>
+                        </dd>
+
+                        <dt class="col-5">Chức vụ</dt>
+                        <dd class="col-7">@(Model.Profile.Position ?? (ViewBag.CurrentUserPosition as string) ?? "Chưa có")</dd>
+
+                        <dt class="col-5">Đơn vị</dt>
+                        <dd class="col-7">@Model.Profile.UnitName</dd>
+
+                        <dt class="col-5">Viện</dt>
+                        <dd class="col-7">@Model.Profile.InstituteName</dd>
+
+                        <dt class="col-5">Ngày vào</dt>
+                        <dd class="col-7">
+                            @if (Model.Profile.JoinDate.HasValue)
+                            {
+                                <span>@Model.Profile.JoinDate.Value.ToString("dd/MM/yyyy")</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Chưa có</span>
+                            }
+                        </dd>
+
+                        <dt class="col-5">Đăng nhập cuối</dt>
+                        <dd class="col-7">
+                            @if (Model.Profile.LastLoginDate.HasValue)
+                            {
+                                <span>@Model.Profile.LastLoginDate.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Chưa có</span>
+                            }
+                        </dd>
+                    </dl>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card uy-section-card profile-form-card">
+                <h2 class="profile-card-title">
+                    <i class="bi bi-pencil-square"></i>
+                    Cập nhật thông tin
+                </h2>
+
+                <form asp-action="Update" method="post" class="row g-3">
+                    @Html.AntiForgeryToken()
+
+                    <div class="col-md-6">
+                        <label asp-for="Update.FullName" class="form-label">
+                            <i class="bi bi-person me-1"></i>Họ và tên
+                        </label>
+                        <input class="form-control" asp-for="Update.FullName" placeholder="Nhập họ tên đầy đủ" />
+                        <span class="text-danger small" asp-validation-for="Update.FullName"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Update.Phone" class="form-label">
+                            <i class="bi bi-telephone me-1"></i>Số điện thoại
+                        </label>
+                        <input class="form-control" asp-for="Update.Phone" placeholder="Nhập số điện thoại" />
+                        <span class="text-danger small" asp-validation-for="Update.Phone"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Update.Gender" class="form-label">
+                            <i class="bi bi-gender-ambiguous me-1"></i>Giới tính
+                        </label>
+                        <select class="form-select" asp-for="Update.Gender">
+                            <option value="">-- Chọn giới tính --</option>
+                            <option value="true">Nam</option>
+                            <option value="false">Nữ</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Update.DateOfBirth" class="form-label">
+                            <i class="bi bi-calendar-date me-1"></i>Ngày sinh
+                        </label>
+                        <input class="form-control" asp-for="Update.DateOfBirth" type="date" />
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Update.Address" class="form-label">
+                            <i class="bi bi-geo-alt me-1"></i>Địa chỉ
+                        </label>
+                        <input class="form-control" asp-for="Update.Address" placeholder="Nhập địa chỉ đầy đủ" />
+                        <span class="text-danger small" asp-validation-for="Update.Address"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="profileInstituteName" class="form-label">
+                            <i class="bi bi-building me-1"></i>Viện
+                        </label>
+                        @{
+                            var selectedPosition = Model.PositionOptions.FirstOrDefault(p => p.PositionId == Model.Update.PositionId);
+                            var instituteDisplay = !string.IsNullOrWhiteSpace(selectedPosition?.InstituteName)
+                                ? selectedPosition!.InstituteName
+                                : (Model.Profile?.InstituteName ?? "—");
+                        }
+                        <input class="form-control" id="profileInstituteName" value="@instituteDisplay" readonly />
+                        <input type="hidden" asp-for="Update.InstituteId" />
+                        <span class="text-danger small" asp-validation-for="Update.InstituteId"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="profilePositionId" class="form-label">
+                            <i class="bi bi-person-badge me-1"></i>Chức vụ
+                        </label>
+                        <select class="form-select" asp-for="Update.PositionId" id="profilePositionId">
+                            <option value="">-- Chọn chức vụ --</option>
+                            @foreach (var position in Model.PositionOptions)
+                            {
+                                <option value="@position.PositionId"
+                                        data-institute-id="@position.InstituteId"
+                                        data-institute-name="@position.InstituteName"
+                                        data-unit-name="@position.UnitName">
+                                    @position.PositionName
+                                </option>
+                            }
+                        </select>
+                        <span class="text-danger small" asp-validation-for="Update.PositionId"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="profileUnitName" class="form-label">
+                            <i class="bi bi-diagram-3 me-1"></i>Đơn vị
+                        </label>
+                        <input class="form-control" asp-for="Update.UnitName" id="profileUnitName" readonly />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Update.JoinDate" class="form-label">
+                            <i class="bi bi-calendar-check me-1"></i>Ngày tham gia
+                        </label>
+                        <input class="form-control" asp-for="Update.JoinDate" type="date" />
+                        <span class="text-danger small" asp-validation-for="Update.JoinDate"></span>
+                    </div>
+
+                    <div class="col-12 mt-4">
+                        <button class="btn btn-primary profile-action-button" type="submit" aria-label="Lưu thông tin hồ sơ cá nhân">
+                            <i class="bi bi-check-circle me-2"></i>Lưu thông tin
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card uy-section-card profile-form-card">
+                <h2 class="profile-card-title">
+                    <i class="bi bi-shield-lock"></i>
+                    Đổi mật khẩu
+                </h2>
+
+                <form asp-action="ChangePassword" method="post" class="row g-3">
+                    @Html.AntiForgeryToken()
+
+                    <div class="col-12">
+                        <label asp-for="ChangePassword.CurrentPassword" class="form-label">
+                            <i class="bi bi-lock me-1"></i>Mật khẩu hiện tại
+                        </label>
+                        <input class="form-control" asp-for="ChangePassword.CurrentPassword" type="password" placeholder="Nhập mật khẩu hiện tại" />
+                        <span class="text-danger small" asp-validation-for="ChangePassword.CurrentPassword"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ChangePassword.NewPassword" class="form-label">
+                            <i class="bi bi-key me-1"></i>Mật khẩu mới
+                        </label>
+                        <input class="form-control" asp-for="ChangePassword.NewPassword" type="password" placeholder="Nhập mật khẩu mới" />
+                        <span class="text-danger small" asp-validation-for="ChangePassword.NewPassword"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ChangePassword.ConfirmNewPassword" class="form-label">
+                            <i class="bi bi-check2-circle me-1"></i>Xác nhận mật khẩu
+                        </label>
+                        <input class="form-control" asp-for="ChangePassword.ConfirmNewPassword" type="password" placeholder="Nhập lại mật khẩu mới" />
+                        <span class="text-danger small" asp-validation-for="ChangePassword.ConfirmNewPassword"></span>
+                    </div>
+
+                    <div class="col-12 mt-4">
+                        <button class="btn btn-outline-danger profile-action-button" type="submit" aria-label="Đổi mật khẩu tài khoản">
+                            <i class="bi bi-shield-check me-2"></i>Đổi mật khẩu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/profile-index.js" asp-append-version="true"></script>
+}
+

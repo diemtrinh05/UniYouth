@@ -1,0 +1,250 @@
+﻿@using UniYouth.Admin.Models.ViewModels.Registration
+@model EventRegistrationListViewModel
+
+@{
+    ViewData["Title"] = "Danh sách Đăng ký";
+    ViewData["PageIcon"] = "bi bi-people";
+    ViewData["PageSubtitle"] = Model.EventName;
+}
+
+<partial name="_Alerts" />
+
+<div class="container-fluid">
+    @* Header và Breadcrumb *@
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+        <div>
+            <partial name="UI/_PageHeader" />
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a asp-controller="Home" asp-action="Index">
+                            <i class="bi bi-house-door"></i> Trang chủ
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-controller="Events" asp-action="Index">Sự kiện</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        Danh sách Đăng ký
+                    </li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex flex-wrap gap-2 justify-content-end">
+            <a asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId"
+               class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại Sự kiện
+            </a>
+            <a asp-controller="Attendance" asp-action="Index" asp-route-eventId="@Model.EventId"
+               class="btn btn-primary">
+                <i class="bi bi-person-check me-1"></i>Xem Điểm danh
+            </a>
+        </div>
+    </div>
+
+    @* Thống kê Cards *@
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            @{
+                var totalMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+                {
+                    ["MetricLabel"] = "Tổng đăng ký",
+                    ["MetricValue"] = Model.TotalRegistrations.ToString(),
+                    ["MetricIcon"] = "bi bi-people-fill",
+                    ["MetricTone"] = "primary"
+                };
+            }
+            <partial name="UI/_MetricCard" view-data="totalMetricViewData" />
+        </div>
+        <div class="col-md-4">
+            @{
+                var registeredMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+                {
+                    ["MetricLabel"] = "Đã đăng ký",
+                    ["MetricValue"] = Model.RegisteredCount.ToString(),
+                    ["MetricIcon"] = "bi bi-check-circle-fill",
+                    ["MetricTone"] = "success"
+                };
+            }
+            <partial name="UI/_MetricCard" view-data="registeredMetricViewData" />
+        </div>
+        <div class="col-md-4">
+            @{
+                var cancelledMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+                {
+                    ["MetricLabel"] = "Đã hủy",
+                    ["MetricValue"] = Model.CancelledCount.ToString(),
+                    ["MetricIcon"] = "bi bi-x-circle-fill",
+                    ["MetricTone"] = "danger"
+                };
+            }
+            <partial name="UI/_MetricCard" view-data="cancelledMetricViewData" />
+        </div>
+    </div>
+
+    @* Bảng Danh sách Đăng ký *@
+    <div class="row">
+        <div class="col-12">
+            <div class="card uy-section-card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center uy-section-card-header">
+                    <h5 class="mb-0 uy-section-card-title">
+                        <i class="bi bi-table me-2"></i>Danh sách (@Model.TotalRegistrations người)
+                    </h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary"
+                                type="button"
+                                data-registration-export
+                                aria-label="Xuất danh sách đăng ký ra Excel">
+                            <i class="bi bi-file-earmark-excel me-1"></i>Xuất Excel
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form class="row g-2 align-items-end mb-3 uy-filter-shell"
+                          method="get"
+                          asp-action="Index"
+                          asp-route-eventId="@Model.EventId">
+                        <div class="col-12 col-md-4">
+                            <label for="q" class="form-label mb-1">Tìm kiếm trên dữ liệu đang hiển thị</label>
+                            <input id="q"
+                                   name="q"
+                                   value="@(Model.Query ?? "")"
+                                   class="form-control"
+                                   placeholder="Mã, họ tên, email…"
+                                   autocomplete="off" />
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="status" class="form-label mb-1">Trạng thái</label>
+                            <select id="status" name="status" class="form-select" data-auto-submit>
+                                <option value="" selected="@(Model.Status == null)">Tất cả</option>
+                                <option value="0" selected="@(Model.Status == 0)">Đã đăng ký</option>
+                                <option value="1" selected="@(Model.Status == 1)">Đã hủy</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="pageSize" class="form-label mb-1">Số dòng/trang</label>
+                            <select id="pageSize" name="pageSize" class="form-select" data-auto-submit>
+                                <option value="20" selected="@(Model.PageSize == 20)">20</option>
+                                <option value="50" selected="@(Model.PageSize == 50)">50</option>
+                                <option value="100" selected="@(Model.PageSize == 100)">100</option>
+                            </select>
+                        </div>
+                        <input type="hidden" name="pageNumber" value="@Model.PageNumber" />
+                        <div class="col-12 col-md-2 d-flex gap-2 justify-content-md-end">
+                            <button type="submit" class="btn btn-outline-secondary" aria-label="Lọc danh sách đăng ký">
+                                <i class="bi bi-arrow-repeat me-1"></i>Lọc
+                            </button>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted">
+                                Bộ lọc trạng thái và số dòng dùng dữ liệu phân trang từ hệ thống; ô tìm kiếm lọc nhanh trên dữ liệu đang hiển thị.
+                            </small>
+                        </div>
+                    </form>
+
+                    @if (!Model.HasRegistrations)
+                    {
+                        var emptyStateViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+                        {
+                            ["EmptyIcon"] = "bi bi-people",
+                            ["EmptyTitle"] = "Chưa có người đăng ký",
+                            ["EmptyDescription"] = "Chưa có ai đăng ký tham gia sự kiện này."
+                        };
+                        <partial name="UI/_EmptyState" view-data="emptyStateViewData" />
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="registrationsTable">
+                                <caption class="visually-hidden">Danh sách đăng ký sự kiện</caption>
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Mã</th>
+                                        <th>Họ và Tên</th>
+                                        <th>Email</th>
+                                        <th>Thời gian Đăng ký</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ghi chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int index = 1;
+                                    }
+                                    @foreach (var reg in Model.Registrations.OrderByDescending(r => r.RegisterTime))
+                                    {
+                                        <tr>
+                                            <td>@index</td>
+                                            <td>
+                                                <strong>@reg.Code</strong>
+                                            </td>
+                                            <td>@reg.FullName</td>
+                                            <td>
+                                                <a href="mailto:@reg.Email" class="text-decoration-none">
+                                                    <i class="bi bi-envelope me-1"></i>@reg.Email
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    <i class="bi bi-calendar-event me-1"></i>
+                                                    @reg.RegisterTime.ToString("dd/MM/yyyy HH:mm")
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <span class="badge @reg.StatusBadgeClass">
+                                                    <i class="bi @reg.StatusIcon me-1"></i>
+                                                    @reg.StatusDisplay
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if (reg.IsCancelled)
+                                                {
+                                                    @if (!string.IsNullOrWhiteSpace(reg.CancellationReason))
+                                                    {
+                                                        <small class="text-muted"
+                                                               data-bs-toggle="tooltip"
+                                                               title="@reg.CancellationReason">
+                                                            <i class="bi bi-info-circle me-1"></i>
+                                                            @reg.CancellationReason
+                                                        </small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        index++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <partial name="_Pagination" model="new PaginationViewModel { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages }" />
+
+                        @* Ghi chú READ-ONLY *@
+                        <div class="alert alert-info mt-3 mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Lưu ý:</strong> Trang này chỉ để xem danh sách đăng ký.
+                            Người dùng tự đăng ký qua ứng dụng mobile/web.
+                            Admin không thể thêm/sửa/xóa đăng ký từ trang này.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/registration-index.js"
+            asp-append-version="true"
+            data-registration-export-file-name="DanhSachDangKy_Event@(Model.EventId)_@(DateTime.Now.ToString("yyyyMMdd")).csv"></script>
+}
+

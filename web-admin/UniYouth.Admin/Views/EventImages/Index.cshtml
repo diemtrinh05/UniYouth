@@ -1,0 +1,334 @@
+﻿@model UniYouth.Admin.Models.ViewModels.EventImages.EventImagesPageViewModel
+
+@{
+    ViewData["Title"] = "Quản lý Hình ảnh";
+    ViewData["PageIcon"] = "bi bi-images";
+    ViewData["PageSubtitle"] = $"Quản lý hình ảnh cho sự kiện {Model.EventName}.";
+}
+
+<partial name="_Alerts" />
+
+<div class="container-fluid px-0">
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-3 flex-wrap">
+        <partial name="UI/_PageHeader" />
+        <a asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại Sự kiện
+        </a>
+    </div>
+
+    @* Thống kê Cards *@
+    <div class="row mb-4">
+        <div class="col-md-3">
+            @{
+                ViewData["MetricLabel"] = "Tổng số hình ảnh";
+                ViewData["MetricValue"] = Model.TotalImages.ToString();
+                ViewData["MetricIcon"] = "bi bi-images";
+                ViewData["MetricTone"] = "primary";
+            }
+            <partial name="UI/_MetricCard" />
+        </div>
+        <div class="col-md-3">
+            @{
+                ViewData["MetricLabel"] = "Banner";
+                ViewData["MetricValue"] = Model.BannerCount.ToString();
+                ViewData["MetricIcon"] = "bi bi-image";
+                ViewData["MetricTone"] = "info";
+            }
+            <partial name="UI/_MetricCard" />
+        </div>
+        <div class="col-md-3">
+            @{
+                ViewData["MetricLabel"] = "Thumbnail";
+                ViewData["MetricValue"] = Model.ThumbnailCount.ToString();
+                ViewData["MetricIcon"] = "bi bi-file-image";
+                ViewData["MetricTone"] = "success";
+            }
+            <partial name="UI/_MetricCard" />
+        </div>
+        <div class="col-md-3">
+            @{
+                ViewData["MetricLabel"] = "Gallery";
+                ViewData["MetricValue"] = Model.GalleryCount.ToString();
+                ViewData["MetricIcon"] = "bi bi-collection";
+                ViewData["MetricTone"] = "secondary";
+            }
+            <partial name="UI/_MetricCard" />
+        </div>
+    </div>
+
+    @* Form Upload *@
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card uy-section-card">
+                <div class="card-header uy-section-card-header">
+                    <h5 class="uy-section-card-title mb-0">
+                        <i class="bi bi-cloud-upload me-2"></i>Tải lên Hình ảnh Mới
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Upload"
+                          asp-route-eventId="@Model.EventId"
+                          method="post"
+                          enctype="multipart/form-data"
+                          id="uploadForm">
+                        @Html.AntiForgeryToken()
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="Files" class="form-label">
+                                    <i class="bi bi-file-earmark-image me-1"></i>Chọn Hình ảnh
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="file"
+                                       class="form-control"
+                                       id="Files"
+                                       name="Files"
+                                       multiple
+                                       accept="image/jpeg,image/jpg,image/png,image/webp"
+                                       required>
+                                <div class="form-text">
+                                    Chọn một hoặc nhiều hình ảnh (JPEG, PNG, WebP). Tối đa 3MB/file.
+                                </div>
+                                <div id="filePreview" class="mt-2"></div>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="ImageType" class="form-label">
+                                    <i class="bi bi-tag me-1"></i>Loại Hình ảnh
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="ImageType" name="ImageType" required>
+                                    <option value="">-- Chọn loại --</option>
+                                    @foreach (var type in Model.AvailableImageTypes)
+                                    {
+                                        <option value="@type">@type</option>
+                                    }
+                                </select>
+                                <div class="form-text">
+                                    Tất cả hình ảnh sẽ có cùng loại này
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="Caption" class="form-label">
+                                    <i class="bi bi-chat-left-text me-1"></i>Chú thích (Tùy chọn)
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="Caption"
+                                       name="Caption"
+                                       maxlength="255"
+                                       placeholder="Nhập chú thích">
+                                <div class="form-text">
+                                    Mô tả ngắn cho hình ảnh
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary" id="uploadButton" aria-label="Tải hình ảnh sự kiện lên">
+                                    <i class="bi bi-upload me-1"></i>Tải lên Hình ảnh
+                                </button>
+                                <button type="reset" class="btn btn-outline-secondary" aria-label="Đặt lại form tải hình ảnh">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Đặt lại
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Danh sách Hình ảnh *@
+    <div class="row">
+        <div class="col-12">
+            <div class="card uy-section-card">
+                <div class="card-header uy-section-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="uy-section-card-title mb-0">
+                        <i class="bi bi-collection me-2"></i>Hình ảnh Hiện có (@Model.TotalImages)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.HasImages)
+                    {
+                        <partial name="UI/_EmptyState" model='new { Icon = "bi bi-images", Title = "Chưa có hình ảnh nào", Description = "Sử dụng form phía trên để tải lên hình ảnh cho sự kiện này." }' />
+                    }
+                    else
+                    {
+                        <div class="row g-3">
+                            @foreach (var image in Model.Images)
+                            {
+                                var imageActionLabel = string.IsNullOrWhiteSpace(image.Caption)
+                                    ? $"hình ảnh #{image.ImageId}"
+                                    : image.Caption;
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="card h-100 image-card">
+                                        @* Preview Hình ảnh *@
+                                        <div class="position-relative event-image-preview">
+                                            <img src="@Html.ResolveApiAssetUrl(image.ImageUrl)"
+                                                 alt="@(image.Caption ?? "Hình ảnh sự kiện")"
+                                                 class="card-img-top h-100 w-100 event-image-preview-img"
+                                                 data-event-image-fallback>
+
+                                            @* Badge Loại Hình ảnh *@
+                                            <span class="badge @image.ImageTypeBadgeClass position-absolute top-0 start-0 m-2">
+                                                @image.ImageType
+                                            </span>
+
+                                            @* Badge Thứ tự *@
+                                            <span class="badge bg-dark position-absolute top-0 end-0 m-2">
+                                                #@image.DisplayOrder
+                                            </span>
+                                        </div>
+
+                                        <div class="card-body">
+                                            @if (!string.IsNullOrWhiteSpace(image.Caption))
+                                            {
+                                                <p class="card-text small text-muted mb-2">
+                                                    <i class="bi bi-chat-left-text me-1"></i>@image.Caption
+                                                </p>
+                                            }
+                                            else
+                                            {
+                                                <p class="card-text small text-muted mb-2">
+                                                    <em>Không có chú thích</em>
+                                                </p>
+                                            }
+                                        </div>
+
+                                       <div class="card-footer bg-transparent border-top">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">ID: @image.ImageId</small>
+                                                <div class="btn-group btn-group-sm" role="group" aria-label="Thao tác @imageActionLabel">
+                                                    <button type="button"
+                                                            data-image-id="@image.ImageId"
+                                                            data-image-type="@image.ImageType"
+                                                            data-caption="@(image.Caption?.Replace("\r", " ").Replace("\n", " ") ?? string.Empty)"
+                                                            data-display-order="@image.DisplayOrder"
+                                                            class="js-edit-image btn btn-outline-secondary"
+                                                            aria-label="Cập nhật thông tin @imageActionLabel">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                    <button type="button"
+                                                            data-image-id="@image.ImageId"
+                                                            data-image-name="@(string.IsNullOrWhiteSpace(image.Caption) ? "hình ảnh này" : image.Caption.Replace("\r", " ").Replace("\n", " "))"
+                                                            class="js-delete-image btn btn-outline-danger"
+                                                            aria-label="Xóa @imageActionLabel">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modal Xác nhận Xóa *@
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content uy-confirm-modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Xác nhận Xóa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng modal xóa hình ảnh"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa <strong id="deleteImageName"></strong>?</p>
+                <p class="text-danger mb-0">
+                    <i class="bi bi-info-circle me-1"></i>Thao tác này không thể hoàn tác.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Hủy xóa hình ảnh sự kiện">
+                    <i class="bi bi-x-circle me-1"></i>Hủy
+                </button>
+                <form id="deleteForm" asp-action="Delete" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="eventId" value="@Model.EventId" />
+                    <input type="hidden" name="imageId" id="deleteImageId" />
+                    <button type="submit" class="btn btn-danger" aria-label="Xác nhận xóa hình ảnh sự kiện">
+                        <i class="bi bi-trash me-1"></i>Xóa Hình ảnh
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modal Cập nhật metadata *@
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content uy-confirm-modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">
+                    <i class="bi bi-pencil-square me-2"></i>Cập nhật thông tin ảnh
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng modal cập nhật thông tin ảnh"></button>
+            </div>
+            <form id="editForm" asp-action="UpdateMetadata" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="eventId" value="@Model.EventId" />
+                <input type="hidden" name="ImageId" id="editImageId" />
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="editDisplayOrder">Thứ tự hiển thị <span class="text-danger">*</span></label>
+                        <input type="number"
+                               class="form-control"
+                               name="DisplayOrder"
+                               id="editDisplayOrder"
+                               min="1"
+                               max="1000"
+                               step="1"
+                               required />
+                        <div class="form-text">Giá trị từ 1 đến 1000</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="editImageType">Loại hình ảnh <span class="text-danger">*</span></label>
+                        <select class="form-select" name="ImageType" id="editImageType" required>
+                            @foreach (var type in Model.AvailableImageTypes)
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="editCaption">Chú thích</label>
+                        <input type="text"
+                               class="form-control"
+                               name="Caption"
+                               id="editCaption"
+                               maxlength="255"
+                               placeholder="Nhập chú thích (tối đa 255 ký tự)" />
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Hủy cập nhật thông tin hình ảnh">
+                        <i class="bi bi-x-circle me-1"></i>Hủy
+                    </button>
+                    <button type="submit" class="btn btn-primary" aria-label="Lưu thông tin hình ảnh">
+                        <i class="bi bi-save me-1"></i>Lưu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/event-images-index.js" asp-append-version="true"></script>
+}

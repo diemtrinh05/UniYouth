@@ -1,0 +1,359 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Events.EventDetailViewModel
+@{
+    ViewData["Title"] = Model.EventName;
+    ViewData["PageIcon"] = "bi bi-calendar-event";
+    ViewData["PageSubtitle"] = "Xem thông tin, trạng thái và các thao tác quản lý của sự kiện.";
+}
+
+<div class="d-sm-flex align-items-start justify-content-between gap-3 events-detail-header">
+    <partial name="UI/_PageHeader" />
+    <div class="events-detail-actions">
+        <a asp-action="Edit" asp-route-id="@Model.EventId" class="btn btn-outline-primary me-2" aria-label="Chỉnh sửa sự kiện @Model.EventName">
+            <i class="bi bi-pencil me-1"></i>Chỉnh sửa
+        </a>
+        <a href="@(Context.Request.Path + Context.Request.QueryString)" class="btn btn-outline-secondary me-2" aria-label="Làm mới chi tiết sự kiện @Model.EventName">
+            <i class="bi bi-arrow-repeat me-1"></i>Làm mới
+        </a>
+        @if (Model.Status == "Ongoing")
+        {
+            <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#closeEventModal" aria-label="Mở modal kết thúc sự kiện @Model.EventName">
+                <i class="bi bi-check2-circle me-1"></i>Kết thúc
+            </button>
+        }
+        @if (Model.Status != "Cancelled" && Model.Status != "Closed")
+        {
+            <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#cancelEventModal" aria-label="Mở modal hủy sự kiện @Model.EventName">
+                <i class="bi bi-x-circle me-1"></i>Hủy sự kiện
+            </button>
+        }
+        <a asp-action="Index" class="btn btn-outline-secondary" aria-label="Quay lại danh sách sự kiện">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại
+        </a>
+    </div>
+</div>
+
+<partial name="_Alerts" />
+
+<div class="row">
+    <!-- Main Info Card -->
+    <div class="col-lg-8 mb-4">
+        <div class="card mb-4 uy-section-card">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center uy-section-card-header">
+                <h6 class="m-0 uy-section-card-title">Thông tin sự kiện</h6>
+                <span class="badge @Model.StatusBadgeClass">@Model.StatusName</span>
+            </div>
+            <div class="card-body">
+                <!-- Event Name -->
+                <h4 class="mb-3">@Model.EventName</h4>
+
+                <!-- Description -->
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="mb-4">
+                        <h6 class="text-muted">Mô tả:</h6>
+                        <p class="text-justify">@Model.Description</p>
+                    </div>
+                }
+
+                <!-- Time & Location -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">
+                            <i class="bi bi-calendar3 me-1"></i> Thời gian:
+                        </h6>
+                        <p class="mb-1">
+                            <strong>Bắt đầu:</strong> @Model.StartTime.ToString("dd/MM/yyyy HH:mm")
+                        </p>
+                        <p class="mb-0">
+                            <strong>Kết thúc:</strong> @Model.EndTime.ToString("dd/MM/yyyy HH:mm")
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        @if (!string.IsNullOrEmpty(Model.LocationName))
+                        {
+                            <h6 class="text-muted">
+                                <i class="bi bi-geo-alt me-1"></i> Địa điểm:
+                            </h6>
+                            <p>@Model.LocationName</p>
+                            @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+                            {
+                                <p class="small text-muted mb-0">
+                                    GPS: @Model.Latitude.Value.ToString("F6"), @Model.Longitude.Value.ToString("F6")
+                                </p>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Participants -->
+                <div class="mb-3">
+                    <h6 class="text-muted">
+                        <i class="bi bi-people me-1"></i> Người tham gia:
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <strong class="fs-5">
+                                @(Model.CurrentParticipants ?? 0)
+                                @if (Model.MaxParticipants.HasValue)
+                                {
+                                    <span class="text-muted">/ @Model.MaxParticipants</span>
+                                }
+                            </strong>
+                            <span class="ms-2">
+                                @if (!Model.HasAvailableSlots)
+                                {
+                                    <span class="badge bg-danger">Hết chỗ</span>
+                                }
+                                else if (Model.IsRegistrationClosed)
+                                {
+                                    <span class="badge bg-warning">Hết hạn đăng ký</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Còn chỗ</span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+                    @if (Model.MaxParticipants.HasValue)
+                    {
+                        var percentage = Model.MaxParticipants > 0
+                        ? (int)((double)(Model.CurrentParticipants ?? 0) / Model.MaxParticipants.Value * 100)
+                        : 0;
+                        <div class="progress mt-2 uy-progress-lg">
+                            <div class="progress-bar @(percentage < 70 ? "bg-success" : percentage < 90 ? "bg-warning" : "bg-danger")"
+                                 role="progressbar"
+                                 data-progress-width="@percentage"
+                                 aria-label="Tỷ lệ người tham gia sự kiện"
+                                 aria-valuenow="@percentage"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                                @percentage%
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Additional Info -->
+                <div class="row">
+                    @if (!string.IsNullOrEmpty(Model.EventTypeName))
+                    {
+                        <div class="col-md-4 mb-2">
+                            <small class="text-muted">Loại sự kiện:</small>
+                            <p class="mb-0"><strong>@Model.EventTypeName</strong></p>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.InstituteName))
+                    {
+                        <div class="col-md-4 mb-2">
+                            <small class="text-muted">Đơn vị tổ chức:</small>
+                            <p class="mb-0"><strong>@Model.InstituteName</strong></p>
+                        </div>
+                    }
+                    @if (Model.RegistrationDeadline.HasValue)
+                    {
+                        <div class="col-md-4 mb-2">
+                            <small class="text-muted">Hạn đăng ký:</small>
+                            <p class="mb-0"><strong>@Model.RegistrationDeadline.Value.ToString("dd/MM/yyyy HH:mm")</strong></p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Created Info -->
+                @if (!string.IsNullOrEmpty(Model.CreatedByName) && Model.CreatedDate.HasValue)
+                {
+                    <hr class="my-3">
+                    <p class="small text-muted mb-0">
+                        <i class="bi bi-person me-1"></i>
+                        Tạo bởi: <strong>@Model.CreatedByName</strong> - @Model.CreatedDate.Value.ToString("dd/MM/yyyy HH:mm")
+                    </p>
+                }
+            </div>
+        </div>
+
+        <!-- Event Images -->
+        @if (Model.ImageUrls != null && Model.ImageUrls.Any())
+        {
+            <div class="card uy-section-card">
+                <div class="card-header py-3 uy-section-card-header">
+                    <h6 class="m-0 uy-section-card-title">Hình ảnh sự kiện</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var imageUrl in Model.ImageUrls)
+                        {
+                            <div class="col-md-4 mb-3">
+                                <img src="@Html.ResolveApiAssetUrl(imageUrl)" class="img-fluid rounded" alt="Hình ảnh sự kiện @Model.EventName">
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Sidebar - Quick Actions -->
+    <div class="col-lg-4">
+        <!-- Quick Links Card -->
+        <div class="card mb-4 uy-section-card">
+            <div class="card-header py-3 uy-section-card-header">
+                <h6 class="m-0 uy-section-card-title">Quản lý sự kiện</h6>
+            </div>
+            <div class="card-body">
+                @if (Model.EventPointsCount.HasValue && !Model.HasEventPointsConfigured)
+                {
+                    <div class="alert alert-warning" role="alert">
+                        Sự kiện này <strong>chưa được cấu hình điểm rèn luyện</strong>.
+                        <div class="small mt-1">
+                            Vui lòng vào mục <strong>Điểm rèn luyện</strong> để cấu hình.
+                        </div>
+                    </div>
+                }
+                <div class="d-grid gap-2">
+                    <a asp-controller="EventImages"
+                       asp-action="Index"
+                       asp-route-eventId="@Model.EventId"
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-images me-2"></i>Quản lý hình ảnh
+                    </a>
+                    <a asp-controller="QrCodes"
+                       asp-action="Index"
+                       asp-route-eventId="@Model.EventId"
+                       class="btn btn-outline-success">
+                        <i class="bi bi-qr-code me-2"></i>Mã QR điểm danh
+                    </a>
+                    <a asp-controller="Attendance"
+                       asp-action="Index"
+                       asp-route-eventId="@Model.EventId"
+                       class="btn btn-outline-info">
+                        <i class="bi bi-person-check me-2"></i>Danh sách điểm danh
+                    </a>
+                    <a asp-controller="Registration"
+                       asp-action="Index"
+                       asp-route-eventId="@Model.EventId"
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-people me-2"></i>Danh sách đăng ký
+                    </a>
+                    <a asp-controller="EventPoints"
+                       asp-action="Index"
+                       asp-route-eventId="@Model.EventId"
+                       class="btn btn-outline-warning">
+                        <i class="bi bi-trophy me-2"></i>Điểm rèn luyện
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Info Summary -->
+        <div class="card uy-section-card">
+            <div class="card-header py-3 uy-section-card-header">
+                <h6 class="m-0 uy-section-card-title">Thông tin tổng quan</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="bi bi-hash text-primary me-2"></i>
+                        <strong>ID:</strong> @Model.EventId
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-calendar-check text-success me-2"></i>
+                        <strong>Trạng thái:</strong>
+                        <span class="badge @Model.StatusBadgeClass">@Model.StatusName</span>
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-person-bounding-box text-primary me-2"></i>
+                        <strong>Xác minh khuôn mặt:</strong>
+                        @if (Model.EnableFaceVerification)
+                        {
+                            <span class="badge bg-primary">Đang bật</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Đang tắt</span>
+                        }
+                    </li>
+                    @if (Model.AllowRadius.HasValue)
+                    {
+                        <li class="mb-2">
+                            <i class="bi bi-geo text-danger me-2"></i>
+                            <strong>Bán kính:</strong> @Model.AllowRadius m
+                        </li>
+                    }
+                    <li>
+                        <i class="bi bi-people text-info me-2"></i>
+                        <strong>Đã đăng ký:</strong> @(Model.CurrentParticipants ?? 0) người
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Status == "Ongoing")
+{
+    <!-- Close Modal -->
+    <div class="modal fade" id="closeEventModal" tabindex="-1" aria-labelledby="closeEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content uy-confirm-modal">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="closeEventModalLabel">Kết thúc sự kiện</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng modal kết thúc sự kiện"></button>
+                </div>
+                <form method="post" asp-action="Close" asp-route-id="@Model.EventId">
+                    <div class="modal-body">
+                        <p class="mb-0">
+                            Bạn có chắc chắn muốn kết thúc sự kiện <strong>@Model.EventName</strong> không?
+                        </p>
+                        <div class="form-text mt-2">
+                            Thao tác này sẽ gọi API <code>PUT /api/Events/{id}/close</code>.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Đóng modal kết thúc sự kiện">Đóng</button>
+                        <button type="submit" class="btn btn-success" aria-label="Xác nhận kết thúc sự kiện @Model.EventName">
+                            <i class="bi bi-check2-circle me-1"></i>Kết thúc sự kiện
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.Status != "Cancelled" && Model.Status != "Closed")
+{
+    <!-- Cancel Modal -->
+    <div class="modal fade" id="cancelEventModal" tabindex="-1" aria-labelledby="cancelEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content uy-confirm-modal">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelEventModalLabel">Hủy sự kiện</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng modal hủy sự kiện"></button>
+                </div>
+                <form method="post" asp-action="Cancel" asp-route-id="@Model.EventId">
+                    <div class="modal-body">
+                        <p class="mb-2">
+                            Bạn có chắc chắn muốn hủy sự kiện <strong>@Model.EventName</strong> không?
+                        </p>
+                        <div class="mb-3">
+                            <label for="cancelReason" class="form-label">Lý do (tùy chọn)</label>
+                            <textarea id="cancelReason"
+                                      name="reason"
+                                      class="form-control"
+                                      rows="3"
+                                      maxlength="255"
+                                      placeholder="Nhập lý do hủy (tối đa 255 ký tự)..."></textarea>
+                            <div class="form-text">Backend giới hạn tối đa 255 ký tự.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Đóng modal hủy sự kiện">Đóng</button>
+                        <button type="submit" class="btn btn-danger" aria-label="Xác nhận hủy sự kiện @Model.EventName">
+                            <i class="bi bi-x-circle me-1"></i>Hủy sự kiện
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

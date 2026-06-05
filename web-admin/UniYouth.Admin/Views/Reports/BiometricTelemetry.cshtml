@@ -1,0 +1,271 @@
+@model UniYouth.Admin.Models.ViewModels.Reports.BiometricTelemetryPageViewModel
+@{
+    ViewData["Title"] = "Telemetry sinh trắc học";
+    ViewData["PageIcon"] = "bi bi-activity";
+    ViewData["PageSubtitle"] = "Theo dõi xác thực khuôn mặt và liveness của các lượt check-in gần đây.";
+}
+
+<partial name="UI/_PageHeader" />
+
+<partial name="_Alerts" />
+
+<div class="card uy-section-card mb-4">
+    <div class="card-header uy-section-card-header">
+        <h5 class="uy-section-card-title mb-0">Bộ lọc telemetry</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" asp-action="BiometricTelemetry" class="uy-filter-shell">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="searchTerm">Tìm kiếm</label>
+                    <input type="text" class="form-control" id="searchTerm" name="searchTerm" value="@Model.SearchTerm" placeholder="Tên sự kiện / người dùng / mã" aria-label="Tìm telemetry theo tên sự kiện, người dùng hoặc mã" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" for="eventId">Event ID</label>
+                    <input type="number" class="form-control" id="eventId" name="eventId" value="@Model.EventId" min="1" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" for="from">Từ ngày</label>
+                    <input type="date" class="form-control" id="from" name="from" value="@Model.From?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" for="to">Đến ngày</label>
+                    <input type="date" class="form-control" id="to" name="to" value="@Model.To?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" for="faceStatus">Face status</label>
+                    <select class="form-select" id="faceStatus" name="faceStatus" aria-label="Lọc theo trạng thái xác thực khuôn mặt">
+                        <option value="">Tất cả</option>
+                        @if (Model.FaceStatus == "Matched")
+                        {
+                            <option value="Matched" selected>Matched</option>
+                        }
+                        else
+                        {
+                            <option value="Matched">Matched</option>
+                        }
+                        @if (Model.FaceStatus == "Review")
+                        {
+                            <option value="Review" selected>Review</option>
+                        }
+                        else
+                        {
+                            <option value="Review">Review</option>
+                        }
+                        @if (Model.FaceStatus == "Mismatch")
+                        {
+                            <option value="Mismatch" selected>Mismatch</option>
+                        }
+                        else
+                        {
+                            <option value="Mismatch">Mismatch</option>
+                        }
+                        @if (Model.FaceStatus == "NoFaceDetected")
+                        {
+                            <option value="NoFaceDetected" selected>NoFaceDetected</option>
+                        }
+                        else
+                        {
+                            <option value="NoFaceDetected">NoFaceDetected</option>
+                        }
+                        @if (Model.FaceStatus == "BlurryImage")
+                        {
+                            <option value="BlurryImage" selected>BlurryImage</option>
+                        }
+                        else
+                        {
+                            <option value="BlurryImage">BlurryImage</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="livenessStatus">Liveness</label>
+                    <select class="form-select" id="livenessStatus" name="livenessStatus" aria-label="Lọc theo trạng thái liveness">
+                        <option value="">Tất cả</option>
+                        @if (Model.LivenessStatus == "Passed")
+                        {
+                            <option value="Passed" selected>Passed</option>
+                        }
+                        else
+                        {
+                            <option value="Passed">Passed</option>
+                        }
+                        @if (Model.LivenessStatus == "Failed")
+                        {
+                            <option value="Failed" selected>Failed</option>
+                        }
+                        else
+                        {
+                            <option value="Failed">Failed</option>
+                        }
+                        @if (Model.LivenessStatus == "Review")
+                        {
+                            <option value="Review" selected>Review</option>
+                        }
+                        else
+                        {
+                            <option value="Review">Review</option>
+                        }
+                        @if (Model.LivenessStatus == "NA")
+                        {
+                            <option value="NA" selected>N/A</option>
+                        }
+                        else
+                        {
+                            <option value="NA">N/A</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check mt-4 pt-2">
+                        <input class="form-check-input" type="checkbox" name="onlyInvalid" value="true" @(Model.OnlyInvalid ? "checked" : null) id="onlyInvalid" />
+                        <label class="form-check-label" for="onlyInvalid">Chỉ lượt check-in không hợp lệ</label>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary" aria-label="Lọc dữ liệu biometric telemetry"><i class="bi bi-search me-1"></i>Lọc</button>
+                    @if (Model.HasFilters)
+                    {
+                        <a class="btn btn-outline-secondary" asp-action="BiometricTelemetry" aria-label="Xóa bộ lọc biometric telemetry">Xóa lọc</a>
+                    }
+                    <a class="btn btn-outline-success"
+                       asp-action="ExportBiometricTelemetryCsv"
+                       asp-route-searchTerm="@Model.SearchTerm"
+                       asp-route-eventId="@Model.EventId"
+                       asp-route-from="@Model.From?.ToString("yyyy-MM-dd")"
+                       asp-route-to="@Model.To?.ToString("yyyy-MM-dd")"
+                       asp-route-faceStatus="@Model.FaceStatus"
+                       asp-route-livenessStatus="@Model.LivenessStatus"
+                       asp-route-onlyInvalid="@Model.OnlyInvalid"
+                       aria-label="Xuất dữ liệu biometric telemetry ra CSV">
+                        <i class="bi bi-download me-1"></i>Xuất CSV
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card uy-section-card">
+    <div class="card-header uy-section-card-header d-flex justify-content-between align-items-center">
+        <h5 class="uy-section-card-title mb-0">Biometric telemetry gần đây</h5>
+        <span class="text-muted small">Tổng: @Model.TotalCount</span>
+    </div>
+    <div class="card-body">
+        @if (Model.Items.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle">
+                    <caption class="visually-hidden">Danh sách telemetry sinh trắc học</caption>
+                    <thead class="table-light">
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>Sự kiện</th>
+                            <th>Người dùng</th>
+                            <th>Face</th>
+                            <th>Liveness</th>
+                            <th>Risk</th>
+                            <th>Kỹ thuật</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        var livenessStatus = item.LivenessPassed == true
+                            ? "Passed"
+                            : item.LivenessPassed == false
+                                ? "Failed"
+                                : !string.IsNullOrWhiteSpace(item.LivenessReason)
+                                    ? "Review"
+                                    : "N/A";
+                        <tr>
+                            <td>
+                                <div>@item.CheckInTime?.ToString("dd/MM/yyyy HH:mm:ss")</div>
+                                <small class="text-muted">Attendance #@item.AttendanceID</small>
+                            </td>
+                            <td>
+                                <div>@item.EventName</div>
+                                <small class="text-muted">Event #@item.EventID</small>
+                            </td>
+                            <td>
+                                <div>@item.FullName</div>
+                                <small class="text-muted">@item.Code</small>
+                            </td>
+                            <td>
+                                <div><strong>@(item.FaceVerificationStatus ?? "-")</strong></div>
+                                <small class="text-muted">
+                                    conf: @(item.FaceConfidence?.ToString("0.000") ?? "-")
+                                    | score: @(item.SimilarityScore?.ToString("0.000") ?? "-")
+                                    | th: @(item.Threshold?.ToString("0.000") ?? "-")
+                                </small>
+                                @if (!string.IsNullOrWhiteSpace(item.FaceVerificationReason))
+                                {
+                                    <div><small class="text-muted">@item.FaceVerificationReason</small></div>
+                                }
+                            </td>
+                            <td>
+                                <div><strong>@livenessStatus</strong></div>
+                                <small class="text-muted">score: @(item.LivenessScore?.ToString("0.000") ?? "-")</small>
+                                @if (!string.IsNullOrWhiteSpace(item.LivenessReason))
+                                {
+                                    <div><small class="text-muted">@item.LivenessReason</small></div>
+                                }
+                            </td>
+                            <td>
+                                <div>@(item.RiskLevel ?? "-")</div>
+                                <small class="text-muted">score: @(item.RiskScore?.ToString() ?? "-")</small>
+                                @if (item.IsValid == false && !string.IsNullOrWhiteSpace(item.InvalidReason))
+                                {
+                                    <div><small class="text-danger">@item.InvalidReason</small></div>
+                                }
+                            </td>
+                            <td>
+                                <div>@(item.FaceProvider ?? "-") / @(item.FaceModel ?? "-")</div>
+                                <small class="text-muted">proc: @(item.FaceProcessingTimeMs?.ToString() ?? "-") ms</small>
+                                @if (!string.IsNullOrWhiteSpace(item.FaceErrorCode))
+                                {
+                                    <div><small class="text-danger">@item.FaceErrorCode</small></div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(item.FaceErrorMessage))
+                                {
+                                    <div><small class="text-muted">@item.FaceErrorMessage</small></div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Model.TotalPages > 1)
+            {
+                <nav aria-label="Phân trang telemetry sinh trắc học">
+                    <ul class="pagination mb-0">
+                        @for (var pageIndex = 1; pageIndex <= Model.TotalPages; pageIndex++)
+                        {
+                            <li class="page-item @(pageIndex == Model.PageNumber ? "active" : string.Empty)">
+                                <a class="page-link"
+                                   aria-label="Trang @pageIndex"
+                                   aria-current="@(pageIndex == Model.PageNumber ? "page" : null)"
+                                   asp-action="BiometricTelemetry"
+                                   asp-route-pageNumber="@pageIndex"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   asp-route-searchTerm="@Model.SearchTerm"
+                                   asp-route-eventId="@Model.EventId"
+                                   asp-route-from="@Model.From?.ToString("yyyy-MM-dd")"
+                                   asp-route-to="@Model.To?.ToString("yyyy-MM-dd")"
+                                   asp-route-faceStatus="@Model.FaceStatus"
+                                   asp-route-livenessStatus="@Model.LivenessStatus"
+                                   asp-route-onlyInvalid="@Model.OnlyInvalid">@pageIndex</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <partial name="UI/_EmptyState" model='new { Icon = "bi bi-inbox", Title = "Chưa có dữ liệu telemetry", Description = "Chưa có dữ liệu biometric telemetry phù hợp với bộ lọc hiện tại." }' />
+        }
+    </div>
+</div>

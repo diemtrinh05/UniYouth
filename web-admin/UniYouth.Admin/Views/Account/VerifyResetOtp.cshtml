@@ -1,0 +1,111 @@
+@using UniYouth.Admin.Models.ViewModels.Auth
+@model VerifyResetOtpViewModel
+@{
+    ViewData["Title"] = "Xác thực OTP";
+    Layout = "_AuthLayout";
+    var accountDisplay = string.IsNullOrWhiteSpace(Model.AccountDisplay) ? Model.Account : Model.AccountDisplay;
+    var otpExpiresAtIso = Model.OtpExpiresAt?.ToString("o");
+    var resendAvailableAtIso = Model.ResendAvailableAt?.ToString("o");
+}
+
+<main class="auth-flow-container">
+    <section class="auth-flow-card">
+        <div class="card-body p-4 p-md-5">
+            <div class="mb-3">
+                <a asp-controller="Account" asp-action="ForgotPassword" class="auth-flow-back-link text-decoration-none small" aria-label="Quay lại bước nhập tài khoản">
+                    <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Quay lại nhập tài khoản
+                </a>
+            </div>
+
+            <h1 class="h3 auth-flow-title mb-2">
+                <span class="auth-flow-title-icon me-2">
+                    <i class="bi bi-shield-check" aria-hidden="true"></i>
+                </span>
+                Xác thực OTP
+            </h1>
+            <p class="auth-flow-description mb-3">
+                Nhập mã OTP gồm 6 chữ số đã được gửi đến email đăng ký của tài khoản để tiếp tục đặt lại mật khẩu.
+            </p>
+
+            <div class="auth-flow-meta mb-4">
+                <div class="small text-muted mb-1">Tài khoản</div>
+                <div class="fw-semibold">@accountDisplay</div>
+                <div class="small text-muted mt-2">
+                    Mã OTP có hiệu lực trong 5 phút.
+                    <span class="ms-2" id="otpCountdownContainer" @(Model.OtpExpiresAt.HasValue ? "" : "hidden")>
+                        Còn lại: <span id="otpCountdown" class="auth-flow-countdown">05:00</span>
+                    </span>
+                </div>
+            </div>
+
+            <div id="otpExpiredAlert" class="alert alert-warning d-none" role="alert">
+                Mã OTP đã hết hạn. Vui lòng gửi lại mã mới để tiếp tục.
+            </div>
+
+            <partial name="_Alerts" />
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+            <form asp-action="VerifyResetOtp" method="post" id="verifyResetOtpForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Account" />
+                <input type="hidden" asp-for="AccountDisplay" />
+
+                <div class="mb-3">
+                    <label asp-for="OtpCode" class="form-label">Mã OTP</label>
+                    <input asp-for="OtpCode"
+                           id="otpCodeInput"
+                           class="form-control auth-flow-otp-input"
+                           inputmode="numeric"
+                           autocomplete="one-time-code"
+                           maxlength="6"
+                           placeholder="000000" />
+                    <span asp-validation-for="OtpCode" class="text-danger"></span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" id="verifyOtpButton" class="btn btn-primary" aria-label="Xác thực mã OTP đặt lại mật khẩu">
+                        <span class="default-label">
+                            <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Xác thực mã
+                        </span>
+                        <span class="loading-label d-none">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Đang xác thực...
+                        </span>
+                    </button>
+                </div>
+            </form>
+
+            <form asp-action="ResendResetOtp" method="post" class="mt-2">
+                @Html.AntiForgeryToken()
+                <div class="d-grid">
+                    <button type="submit"
+                            id="resendOtpButton"
+                            class="btn btn-outline-secondary"
+                            aria-label="Gửi lại mã OTP đặt lại mật khẩu"
+                            @(Model.CanResend ? null : "disabled=\"disabled\"")>
+                        <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Gửi lại mã
+                    </button>
+                </div>
+                <div id="resendCooldownHint"
+                     class="small text-muted mt-2"
+                     @(Model.CanResend ? "hidden" : null)>
+                    Bạn có thể gửi lại mã sau <span id="resendCooldown">00:30</span>.
+                </div>
+            </form>
+        </div>
+    </section>
+</main>
+
+@section Scripts {
+    <script src="~/js/auth-recovery.js"
+            asp-append-version="true"
+            data-auth-recovery
+            data-otp-expires-at="@otpExpiresAtIso"
+            data-resend-available-at="@resendAvailableAtIso"></script>
+}

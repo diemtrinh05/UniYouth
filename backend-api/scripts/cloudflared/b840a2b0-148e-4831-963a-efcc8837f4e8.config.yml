@@ -1,0 +1,19 @@
+﻿tunnel: b840a2b0-148e-4831-963a-efcc8837f4e8
+credentials-file: C:\Users\Hi\.cloudflared\b840a2b0-148e-4831-963a-efcc8837f4e8.json
+
+ingress:
+  - hostname: api.aerisdao.id.vn
+    service: https://localhost:7016
+    originRequest:
+      noTLSVerify: true
+
+  - hostname: admin.aerisdao.id.vn
+    service: https://localhost:7091
+    originRequest:
+      noTLSVerify: true
+
+  - hostname: face.aerisdao.id.vn
+    service: http://127.0.0.1:8001
+
+  - service: http_status:404
+

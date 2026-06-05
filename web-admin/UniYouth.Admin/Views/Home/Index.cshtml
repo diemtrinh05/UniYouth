@@ -1,0 +1,24 @@
+﻿@using System.Linq
+@using System.Text.Json
+@model UniYouth.Admin.Models.ViewModels.Home.HomeOverviewViewModel
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+}
+
+<partial name="Partials/_HomeHeader" model="Model" />
+<partial name="Partials/_HomeStatsCards" model="Model" />
+<partial name="Partials/_HomeChartAndActions" model="Model" />
+<partial name="Partials/_HomeRecentEventsTable" model="Model" />
+<partial name="Partials/_EventQrPreviewModal" />
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="~/js/home-index.js"
+            asp-append-version="true"
+            data-home-dashboard-data="@JsonSerializer.Serialize(Model.ChartDataByPeriod, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })"
+            data-home-qr-preview-url="@Url.Action("EventQrPreview", "Home")"></script>
+}

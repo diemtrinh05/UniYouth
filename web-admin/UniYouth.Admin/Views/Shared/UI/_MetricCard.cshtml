@@ -1,0 +1,34 @@
+@{
+    var label = ViewData["MetricLabel"]?.ToString() ?? string.Empty;
+    var value = ViewData["MetricValue"]?.ToString() ?? "0";
+    var valueHtml = ViewData["MetricValueHtml"]?.ToString();
+    var helperText = ViewData["MetricHelper"]?.ToString();
+    var icon = ViewData["MetricIcon"]?.ToString() ?? "bi bi-graph-up";
+    var tone = ViewData["MetricTone"]?.ToString() ?? "primary";
+    var iconClass = $"uy-metric-icon uy-metric-icon-{tone}";
+}
+
+<div class="uy-metric-card">
+    <div class="uy-metric-body">
+        <div>
+            <div class="uy-metric-label">@label</div>
+            <div class="uy-metric-value">
+                @if (!string.IsNullOrWhiteSpace(valueHtml))
+                {
+                    @Html.Raw(valueHtml)
+                }
+                else
+                {
+                    @value
+                }
+            </div>
+            @if (!string.IsNullOrWhiteSpace(helperText))
+            {
+                <div class="uy-metric-helper">@helperText</div>
+            }
+        </div>
+        <div class="@iconClass">
+            <i class="@icon" aria-hidden="true"></i>
+        </div>
+    </div>
+</div>

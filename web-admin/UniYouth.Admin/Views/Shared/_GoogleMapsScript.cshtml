@@ -1,0 +1,13 @@
+﻿@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    var apiKey = Configuration["GoogleMaps:ApiKey"];
+}
+
+@if (!string.IsNullOrWhiteSpace(apiKey))
+{
+    <script src="https://maps.googleapis.com/maps/api/js?key=@apiKey" defer></script>
+}
+else
+{
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
+}

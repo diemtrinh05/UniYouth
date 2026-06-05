@@ -1,0 +1,83 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Users.UserManagementViewModel
+
+<div class="modal fade" id="updateRolesModal" tabindex="-1" aria-labelledby="updateRolesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content uy-confirm-modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateRolesModalLabel">
+                    <i class="bi bi-shield-check me-2"></i>Cập nhật vai trò
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng modal cập nhật vai trò"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="small text-muted">Người dùng</div>
+                    <div class="fw-semibold" id="updateRolesUserName">-</div>
+                </div>
+
+                <form asp-action="UpdateRoles" method="post" id="updateRolesForm">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="UpdateRoles.UserId" id="updateRolesUserId" type="hidden" />
+
+                    <div class="mb-3">
+                        <label class="form-label" for="updateRolesRole">Vai trò</label>
+                        <select class="form-select" asp-for="UpdateRoles.RolesCsv" id="updateRolesRole">
+                            <option value="Admin">Admin</option>
+                            <option value="CanBo">Cán bộ</option>
+                            <option value="DoanVien">Đoàn viên</option>
+                            <option value="HoiVien">Hội viên</option>
+                        </select>
+                        <span class="text-danger small" asp-validation-for="UpdateRoles.RolesCsv"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Hủy cập nhật vai trò người dùng">Hủy</button>
+                        <button class="btn btn-primary" type="submit" aria-label="Lưu vai trò người dùng">
+                            <i class="bi bi-check2-circle me-1"></i>Lưu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content uy-confirm-modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateStatusModalLabel">
+                    <i class="bi bi-toggle-on me-2"></i>Cập nhật trạng thái
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng modal cập nhật trạng thái"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="small text-muted">Người dùng</div>
+                    <div class="fw-semibold" id="updateStatusUserName">-</div>
+                </div>
+
+                <form asp-action="UpdateStatus" method="post" id="updateStatusForm">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="UpdateStatus.UserId" id="updateStatusUserId" type="hidden" />
+
+                    <div class="mb-3">
+                        <label class="form-label" for="updateStatusValue">Trạng thái</label>
+                        <select class="form-select" asp-for="UpdateStatus.Status" id="updateStatusValue">
+                            <option value="1">Hoạt động</option>
+                            <option value="0">Không hoạt động</option>
+                        </select>
+                        <span class="text-danger small" asp-validation-for="UpdateStatus.Status"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Hủy cập nhật trạng thái người dùng">Hủy</button>
+                        <button class="btn btn-primary" type="submit" aria-label="Lưu trạng thái người dùng">
+                            <i class="bi bi-check2-circle me-1"></i>Lưu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

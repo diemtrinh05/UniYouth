@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "Truy cập bị từ chối";
+    ViewData["AuthStatusBodyClass"] = "auth-status-page-forbidden";
+    Layout = "_AuthStatusLayout";
+}
+
+<main class="auth-status-container">
+    <section class="auth-status-card" aria-labelledby="forbiddenTitle">
+        <div class="auth-status-icon" aria-hidden="true">
+            <i class="bi bi-shield-exclamation"></i>
+        </div>
+
+        <div class="auth-status-code">403</div>
+        <h1 class="auth-status-title" id="forbiddenTitle">Truy cập bị từ chối</h1>
+
+        <div class="auth-status-warning">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            <strong>Chỉ dành cho Admin và Cán bộ Đoàn</strong>
+        </div>
+
+        <p class="auth-status-message">
+            Bạn không có quyền truy cập hệ thống quản trị này.<br>
+            Hệ thống UniYouth Admin chỉ dành cho:<br>
+            <strong>Quản trị viên (Admin)</strong><br>
+            <strong>Cán bộ Đoàn (CanBo)</strong>
+        </p>
+
+        <div class="auth-status-actions">
+            <form action="/Account/Logout" method="post" class="auth-status-action-form">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn auth-status-button auth-status-button-danger" aria-label="Đăng xuất khỏi hệ thống">
+                    <i class="bi bi-box-arrow-right me-2"></i>
+                    Đăng xuất
+                </button>
+            </form>
+
+            <a href="javascript:history.back()" class="btn auth-status-button auth-status-button-outline">
+                <i class="bi bi-arrow-left me-2"></i>
+                Quay lại
+            </a>
+        </div>
+
+        <div class="auth-status-footer">
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+            Nếu bạn là sinh viên, vui lòng sử dụng ứng dụng mobile UniYouth.
+        </div>
+    </section>
+</main>

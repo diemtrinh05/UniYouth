@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "adb reverse 7016",
+      "type": "shell",
+      "command": "adb reverse tcp:7016 tcp:7016",
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,0 +1,461 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Events.EventListViewModel
+@{
+    ViewData["Title"] = "Quản lý Sự kiện";
+    ViewData["PageIcon"] = "bi bi-calendar-check";
+    ViewData["PageSubtitle"] = "Theo dõi, lọc và quản lý toàn bộ sự kiện trong hệ thống.";
+
+    string? currentSortBy = ViewBag.SortBy as string;
+    string? currentSortDir = ViewBag.SortDir as string;
+    var sortEventId = "eventId";
+    var sortEventName = "eventName";
+    var sortStartTime = "startTime";
+    var sortStatus = "status";
+
+    string GetNextSortDir(string column)
+    {
+        if (string.Equals(currentSortBy, column, StringComparison.OrdinalIgnoreCase))
+        {
+            return string.Equals(currentSortDir, "asc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc";
+        }
+
+        return "desc";
+    }
+
+    string GetSortIcon(string column)
+    {
+        if (!string.Equals(currentSortBy, column, StringComparison.OrdinalIgnoreCase))
+        {
+            return "bi bi-arrow-down-up text-muted";
+        }
+
+        return string.Equals(currentSortDir, "asc", StringComparison.OrdinalIgnoreCase)
+            ? "bi bi-caret-up-fill text-primary"
+            : "bi bi-caret-down-fill text-primary";
+    }
+}
+
+<div class="d-sm-flex align-items-start justify-content-between gap-3 events-index-header">
+    <partial name="UI/_PageHeader" />
+    <div class="events-index-actions">
+        <a href="@(Context.Request.Path + Context.Request.QueryString)" class="btn btn-outline-secondary me-2" aria-label="Làm mới danh sách sự kiện">
+            <i class="bi bi-arrow-repeat me-1"></i>
+            Làm mới
+        </a>
+        <a asp-action="Create" class="btn btn-primary" aria-label="Tạo sự kiện mới">
+            <i class="bi bi-plus-circle me-1"></i>
+            Tạo sự kiện mới
+        </a>
+    </div>
+</div>
+
+<partial name="_Alerts" />
+
+<!-- Filter Card -->
+<div class="card mb-4 uy-section-card">
+    <div class="card-header py-3 uy-section-card-header">
+        <h6 class="m-0 uy-section-card-title">
+            <i class="bi bi-funnel me-2"></i>Bộ lọc
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="get" asp-action="Index" id="filterForm" class="uy-filter-shell">
+            <input type="hidden" name="instituteId" value="@ViewBag.InstituteId" />
+            <div class="row g-3">
+                <!-- Search Box -->
+                <div class="col-md-4">
+                    <label for="eventsSearchTerm" class="form-label small text-muted">Tìm kiếm</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text"
+                               id="eventsSearchTerm"
+                               class="form-control"
+                               name="searchTerm"
+                               value="@ViewBag.SearchTerm"
+                               placeholder="Tìm theo tên sự kiện...">
+                    </div>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-2">
+                    <label for="eventsStatusFilter" class="form-label small text-muted">Trạng thái</label>
+                    <select id="eventsStatusFilter" class="form-select" name="status">
+                        <option value="">Tất cả</option>
+                        <option value="upcoming" selected="@(ViewBag.Status == "upcoming" ? "selected" : null)">Sắp diễn ra</option>
+                        <option value="ongoing" selected="@(ViewBag.Status == "ongoing" ? "selected" : null)">Đang diễn ra</option>
+                        <option value="completed" selected="@(ViewBag.Status == "completed" ? "selected" : null)">Đã kết thúc</option>
+                        <option value="cancelled" selected="@(ViewBag.Status == "cancelled" ? "selected" : null)">Đã hủy</option>
+                    </select>
+                </div>
+
+                <!-- Event Type Filter -->
+                <div class="col-md-2">
+                    <label for="eventsTypeFilter" class="form-label small text-muted">Loại sự kiện</label>
+                    <select id="eventsTypeFilter" class="form-select" name="eventType">
+                        <option value="">Tất cả</option>
+                        @{
+                            var eventTypes = ViewBag.EventTypes as IEnumerable<UniYouth.Admin.Models.DTOs.EventTypes.EventTypeDto>
+                                             ?? Enumerable.Empty<UniYouth.Admin.Models.DTOs.EventTypes.EventTypeDto>();
+                            var selectedEventType = ViewBag.EventType as string;
+                        }
+                        @foreach (var t in eventTypes.OrderBy(x => x.TypeId))
+                        {
+                            <option value="@t.TypeId"
+                                    selected="@(selectedEventType == t.TypeId.ToString() ? "selected" : null)">
+                                @t.TypeName
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Date From -->
+                <div class="col-md-2">
+                    <label for="eventsDateFrom" class="form-label small text-muted">Từ ngày</label>
+                    <input type="date"
+                           id="eventsDateFrom"
+                           class="form-control"
+                           name="dateFrom"
+                           value="@ViewBag.DateFrom">
+                </div>
+
+                <!-- Date To -->
+                <div class="col-md-2">
+                    <label for="eventsDateTo" class="form-label small text-muted">Đến ngày</label>
+                    <input type="date"
+                           id="eventsDateTo"
+                           class="form-control"
+                           name="dateTo"
+                           value="@ViewBag.DateTo">
+                </div>
+
+                <!-- Filter Buttons -->
+                <div class="col-12">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary" aria-label="Lọc danh sách sự kiện">
+                            <i class="bi bi-search me-1"></i>Lọc
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-events-reset-filters aria-label="Đặt lại bộ lọc sự kiện">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Đặt lại
+                        </button>
+                        <div class="ms-auto">
+                            <label for="eventsPageSize" class="visually-hidden">Số dòng mỗi trang</label>
+                            <select class="form-select form-select-sm events-page-size-select"
+                                    id="eventsPageSize"
+                                    name="pageSize"
+                                    data-auto-submit>
+                                <option value="10" selected="@(Model.PageSize == 10 ? "selected" : null)">10 / trang</option>
+                                <option value="25" selected="@(Model.PageSize == 25 ? "selected" : null)">25 / trang</option>
+                                <option value="50" selected="@(Model.PageSize == 50 ? "selected" : null)">50 / trang</option>
+                                <option value="100" selected="@(Model.PageSize == 100 ? "selected" : null)">100 / trang</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Events List Card -->
+<div class="card mb-4 uy-section-card">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center uy-section-card-header">
+        <h6 class="m-0 uy-section-card-title">
+            Danh sách sự kiện (@Model.TotalCount sự kiện)
+        </h6>
+    </div>
+    <div class="card-body">
+        @if (Model.Events.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <caption class="visually-hidden">Danh sách sự kiện</caption>
+                    <thead class="table-light">
+                        <tr>
+                            <th class="events-index-col-id">
+                                <a class="text-decoration-none text-dark"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="1"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   asp-route-searchTerm="@ViewBag.SearchTerm"
+                                   asp-route-status="@ViewBag.Status"
+                                   asp-route-eventType="@ViewBag.EventType"
+                                   asp-route-dateFrom="@ViewBag.DateFrom"
+                                   asp-route-dateTo="@ViewBag.DateTo"
+                                   asp-route-instituteId="@ViewBag.InstituteId"
+                                   asp-route-sortBy="@sortEventId"
+                                   asp-route-sortDir="@GetNextSortDir(sortEventId)">
+                                    #
+                                    <i class="@GetSortIcon(sortEventId) ms-1"></i>
+                                </a>
+                            </th>
+                            <th class="events-index-col-name">
+                                <a class="text-decoration-none text-dark"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="1"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   asp-route-searchTerm="@ViewBag.SearchTerm"
+                                   asp-route-status="@ViewBag.Status"
+                                   asp-route-eventType="@ViewBag.EventType"
+                                   asp-route-dateFrom="@ViewBag.DateFrom"
+                                   asp-route-dateTo="@ViewBag.DateTo"
+                                   asp-route-instituteId="@ViewBag.InstituteId"
+                                   asp-route-sortBy="@sortEventName"
+                                   asp-route-sortDir="@GetNextSortDir(sortEventName)">
+                                    Tên sự kiện
+                                    <i class="@GetSortIcon(sortEventName) ms-1"></i>
+                                </a>
+                            </th>
+                            <th class="events-index-col-time">
+                                <a class="text-decoration-none text-dark"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="1"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   asp-route-searchTerm="@ViewBag.SearchTerm"
+                                   asp-route-status="@ViewBag.Status"
+                                   asp-route-eventType="@ViewBag.EventType"
+                                   asp-route-dateFrom="@ViewBag.DateFrom"
+                                   asp-route-dateTo="@ViewBag.DateTo"
+                                   asp-route-instituteId="@ViewBag.InstituteId"
+                                   asp-route-sortBy="@sortStartTime"
+                                   asp-route-sortDir="@GetNextSortDir(sortStartTime)">
+                                    Thời gian
+                                    <i class="@GetSortIcon(sortStartTime) ms-1"></i>
+                                </a>
+                            </th>
+                            <th class="events-index-col-location">Địa điểm</th>
+                            <th class="events-index-col-status">
+                                <a class="text-decoration-none text-dark"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="1"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   asp-route-searchTerm="@ViewBag.SearchTerm"
+                                   asp-route-status="@ViewBag.Status"
+                                   asp-route-eventType="@ViewBag.EventType"
+                                   asp-route-dateFrom="@ViewBag.DateFrom"
+                                   asp-route-dateTo="@ViewBag.DateTo"
+                                   asp-route-instituteId="@ViewBag.InstituteId"
+                                   asp-route-sortBy="@sortStatus"
+                                   asp-route-sortDir="@GetNextSortDir(sortStatus)">
+                                    Trạng thái
+                                    <i class="@GetSortIcon(sortStatus) ms-1"></i>
+                                </a>
+                            </th>
+                            <th class="events-index-col-face">Face</th>
+                            <th class="events-index-col-participants">Người tham gia</th>
+                            <th class="events-index-col-actions">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (item, index) in Model.Events.Select((e, i) => (e, i)))
+                        {
+                            var rowNumber = (Model.PageNumber - 1) * Model.PageSize + index + 1;
+                            <tr>
+                                <!-- STT -->
+                                <td class="text-center fw-bold text-muted">
+                                    @item.EventId
+                                </td>
+
+                                <!-- Tên sự kiện -->
+                                <td>
+                                    <div class="d-flex align-items-start">
+                                        @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
+                                        {
+                                            var thumbSrc = Html.ResolveApiAssetUrl(item.ThumbnailUrl);
+                                            <img src="@thumbSrc"
+                                                 alt="@item.EventName"
+                                                 class="rounded me-2 events-index-thumb">
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center events-index-thumb-placeholder">
+                                                <i class="bi bi-image text-muted"></i>
+                                            </div>
+                                        }
+                                        <div>
+                                            <a asp-action="Details" asp-route-id="@item.EventId"
+                                               class="fw-bold text-decoration-none">
+                                                @item.EventName
+                                            </a>
+                                            <div class="small text-muted">
+                                                @(item.EventTypeName ?? "Chưa phân loại")
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Thời gian -->
+                                <td>
+                                    <div class="small">
+                                        <i class="bi bi-calendar3 text-primary me-1"></i>
+                                        @item.StartTime.ToString("dd/MM/yyyy")
+                                    </div>
+                                    <div class="small text-muted">
+                                        <i class="bi bi-clock me-1"></i>
+                                        @item.StartTime.ToString("HH:mm") - @item.EndTime.ToString("HH:mm")
+                                    </div>
+                                </td>
+
+                                <!-- Địa điểm -->
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.LocationName))
+                                    {
+                                        <small>
+                                            <i class="bi bi-geo-alt text-danger me-1"></i>
+                                            @item.LocationName
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-muted">Chưa xác định</small>
+                                    }
+                                </td>
+
+                                <!-- Trạng thái -->
+                                <td>
+                                    <span class="badge @item.StatusBadgeClass">
+                                        @item.StatusName
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (item.EnableFaceVerification)
+                                    {
+                                        <span class="badge bg-primary">Bật</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Tắt</span>
+                                    }
+                                </td>
+
+                                <!-- Người tham gia -->
+                                <td>
+                                    <div class="mb-1">
+                                        <strong>@item.ParticipantsDisplay</strong>
+                                    </div>
+                                    @if (item.MaxParticipants.HasValue)
+                                    {
+                                        var percentage = item.MaxParticipants > 0
+                                        ? (int)((double)(item.CurrentParticipants ?? 0) / item.MaxParticipants.Value * 100)
+                                        : 0;
+                                        var progressColor = percentage < 70 ? "bg-success" : (percentage < 90 ? "bg-warning" : "bg-danger");
+
+                                        <div class="progress uy-progress-xs">
+                                            <div class="progress-bar @progressColor"
+                                                 role="progressbar"
+                                                 data-progress-width="@percentage"
+                                                 aria-label="Tỷ lệ người tham gia @item.EventName"
+                                                 aria-valuenow="@percentage"
+                                                 aria-valuemin="0"
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    }
+                                </td>
+
+                                <!-- Thao tác -->
+                                <td>
+                                    <div class="btn-group" role="group" aria-label="Thao tác sự kiện @item.EventName">
+                                        <a asp-action="Details"
+                                           asp-route-id="@item.EventId"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="Xem chi tiết"
+                                           aria-label="Xem chi tiết sự kiện @item.EventName">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit"
+                                           asp-route-id="@item.EventId"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Chỉnh sửa"
+                                           aria-label="Chỉnh sửa sự kiện @item.EventName">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        @if (item.Status != "Cancelled" && item.Status != "Closed")
+                                        {
+                                            <button type="button"
+                                                    class="btn btn-sm btn-danger"
+                                                    title="Hủy sự kiện"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#cancelEventModal"
+                                                    data-event-id="@item.EventId"
+                                                    data-event-name="@item.EventName"
+                                                    aria-label="Hủy sự kiện @item.EventName">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <partial name="_Pagination" model="new PaginationViewModel { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages }" />
+        }
+        else
+        {
+            var emptyStateViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["EmptyIcon"] = "bi bi-inbox",
+                ["EmptyTitle"] = "Chưa có sự kiện nào được tìm thấy",
+                ["EmptyDescription"] = "Thay đổi bộ lọc hoặc tạo sự kiện mới để bắt đầu quản lý."
+            };
+            <partial name="UI/_EmptyState" view-data="emptyStateViewData" />
+            <div class="text-center pb-4">
+                <button type="button" class="btn btn-outline-secondary" data-events-reset-filters aria-label="Xóa bộ lọc sự kiện trong trạng thái trống">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Xóa bộ lọc
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Cancel Modal (quick action from Index) -->
+<div class="modal fade" id="cancelEventModal" tabindex="-1" aria-labelledby="cancelEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content uy-confirm-modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelEventModalLabel">Hủy sự kiện</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng modal hủy sự kiện"></button>
+            </div>
+            <form method="post" asp-action="Cancel" asp-controller="Events">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" id="cancelEventId" />
+                <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+
+                <div class="modal-body">
+                    <p class="mb-2">
+                        Bạn có chắc chắn muốn hủy sự kiện <strong id="cancelEventName"></strong> không?
+                    </p>
+
+                    <div class="mb-3">
+                        <label for="cancelReason" class="form-label">Lý do (tùy chọn)</label>
+                        <textarea id="cancelReason"
+                                  name="reason"
+                                  class="form-control"
+                                  rows="3"
+                                  maxlength="255"
+                                  placeholder="Nhập lý do hủy (tối đa 255 ký tự)..."></textarea>
+                        <div class="form-text">Backend giới hạn tối đa 255 ký tự.</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Đóng hộp thoại hủy sự kiện">Đóng</button>
+                    <button type="submit" class="btn btn-danger" aria-label="Xác nhận hủy sự kiện">
+                        <i class="bi bi-x-circle me-1"></i>Hủy sự kiện
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/events-index.js"
+            asp-append-version="true"
+            data-events-index-url="@Url.Action("Index")"></script>
+}

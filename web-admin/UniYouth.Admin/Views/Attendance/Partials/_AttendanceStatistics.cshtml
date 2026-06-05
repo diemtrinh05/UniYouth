@@ -1,0 +1,59 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Attendance.EventAttendanceListViewModel
+
+@if (Model.Statistics != null)
+{
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white mb-1">Đã Đăng ký</h6>
+                            <h3 class="mb-0">@Model.Statistics.TotalRegistrations</h3>
+                        </div>
+                        <i class="bi bi-people-fill attendance-stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white mb-1">Điểm danh Hợp lệ</h6>
+                            <h3 class="mb-0">@Model.Statistics.ValidAttendances</h3>
+                        </div>
+                        <i class="bi bi-check-circle-fill attendance-stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white mb-1">Không Hợp lệ</h6>
+                            <h3 class="mb-0">@Model.Statistics.InvalidAttendances</h3>
+                        </div>
+                        <i class="bi bi-x-circle-fill attendance-stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Tỷ lệ Điểm danh</h6>
+                            <h3 class="mb-0">@Model.Statistics.AttendanceRate.ToString("N1")%</h3>
+                        </div>
+                        <i class="bi bi-graph-up attendance-stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

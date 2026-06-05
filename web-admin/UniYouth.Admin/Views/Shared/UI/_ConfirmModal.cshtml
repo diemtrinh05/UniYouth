@@ -1,0 +1,26 @@
+@{
+    var modalId = ViewData["ConfirmModalId"]?.ToString() ?? "confirmModal";
+    var title = ViewData["ConfirmTitle"]?.ToString() ?? "Xác nhận";
+    var message = ViewData["ConfirmMessage"]?.ToString() ?? "Bạn có chắc chắn muốn tiếp tục?";
+    var confirmText = ViewData["ConfirmButtonText"]?.ToString() ?? "Xác nhận";
+    var confirmTone = ViewData["ConfirmButtonTone"]?.ToString() ?? "danger";
+    var confirmButtonClass = $"btn btn-{confirmTone}";
+}
+
+<div class="modal fade" id="@modalId" tabindex="-1" aria-labelledby="@(modalId)Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content uy-confirm-modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="@(modalId)Label">@title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng hộp thoại xác nhận"></button>
+            </div>
+            <div class="modal-body">
+                @message
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Hủy thao tác xác nhận">Hủy</button>
+                <button type="button" class="@confirmButtonClass" data-confirm-modal-action aria-label="@confirmText">@confirmText</button>
+            </div>
+        </div>
+    </div>
+</div>

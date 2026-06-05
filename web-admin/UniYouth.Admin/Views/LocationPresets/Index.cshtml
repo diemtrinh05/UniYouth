@@ -1,0 +1,265 @@
+﻿@model UniYouth.Admin.Models.ViewModels.LocationPresets.LocationPresetsIndexViewModel
+@{
+    ViewData["Title"] = "Vị trí định sẵn";
+    ViewData["PageIcon"] = "bi bi-geo-alt";
+    ViewData["PageSubtitle"] = "Quản lý các tọa độ chuẩn dùng cho sự kiện và kiểm tra GPS.";
+    var page = Model.Page;
+    var items = page?.Items ?? new List<UniYouth.Admin.Models.DTOs.LocationPresets.LocationPresetDto>();
+    var pageNumber = page?.PageNumber > 0 ? page.PageNumber : 1;
+    var pageSize = page?.PageSize > 0 ? page.PageSize : 20;
+    var totalPages = page?.TotalPages > 0 ? page.TotalPages : 1;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+}
+
+<partial name="_Alerts" />
+
+<partial name="UI/_PageHeader" />
+
+<div class="card mb-4 uy-section-card">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center uy-section-card-header">
+        <strong class="uy-section-card-title"><i class="bi bi-filter me-2"></i>Bộ lọc</strong>
+        <span class="small text-muted">Tổng: <strong>@(page?.TotalCount ?? 0)</strong></span>
+    </div>
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3 align-items-end uy-filter-shell">
+            <div class="col-md-5">
+                <label class="form-label" for="locationPresetSearch">Tìm kiếm</label>
+                <input id="locationPresetSearch" class="form-control" name="q" value="@Model.Q" placeholder="Tìm theo tên/địa chỉ..." />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Hiển thị</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="includeInactive" value="true" id="includeInactive"
+                           @(Model.IncludeInactive ? "checked" : null) />
+                    <label class="form-check-label" for="includeInactive">Bao gồm vị trí không hoạt động</label>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label" for="locationPresetPageSize">Số dòng</label>
+                <select id="locationPresetPageSize" class="form-select" name="pageSize">
+                    <option value="10" selected="@(pageSize == 10 ? "selected" : null)">10</option>
+                    <option value="20" selected="@(pageSize == 20 ? "selected" : null)">20</option>
+                    <option value="50" selected="@(pageSize == 50 ? "selected" : null)">50</option>
+                </select>
+            </div>
+            <div class="col-md-10 text-md-end">
+                <button type="submit" class="btn btn-primary" aria-label="Lọc danh sách vị trí định sẵn">
+                    <i class="bi bi-search me-1"></i>Lọc
+                </button>
+                <a class="btn btn-outline-secondary" asp-action="Index" aria-label="Xóa bộ lọc vị trí định sẵn">
+                    <i class="bi bi-x-circle me-1"></i>Xóa
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-4 uy-section-card">
+    <div class="card-header bg-light uy-section-card-header">
+        <strong class="uy-section-card-title"><i class="bi bi-plus-circle me-2"></i>Tạo vị trí định sẵn</strong>
+    </div>
+    <div class="card-body">
+        <form asp-action="Create" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+
+            <div class="col-md-4">
+                <label class="form-label" asp-for="Create.Name">Tên</label>
+                <input class="form-control" asp-for="Create.Name" />
+                <span class="text-danger small" asp-validation-for="Create.Name"></span>
+            </div>
+            <div class="col-md-8">
+                <label class="form-label" asp-for="Create.Address">Địa chỉ (tùy chọn)</label>
+                <input class="form-control" asp-for="Create.Address" />
+                <span class="text-danger small" asp-validation-for="Create.Address"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label" asp-for="Create.Latitude">Vĩ độ</label>
+                <div class="input-group">
+                    <input class="form-control" asp-for="Create.Latitude" readonly />
+                    <button id="btnUseGpsCreate" type="button" class="btn btn-outline-primary" aria-label="Dùng GPS để lấy tọa độ vị trí định sẵn mới">
+                        <i class="bi bi-geo-alt"></i> Dùng GPS
+                    </button>
+                </div>
+                <span class="text-danger small" asp-validation-for="Create.Latitude"></span>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" asp-for="Create.Longitude">Kinh độ</label>
+                <input class="form-control" asp-for="Create.Longitude" readonly />
+                <span class="text-danger small" asp-validation-for="Create.Longitude"></span>
+                <div id="gpsStatusCreate" class="form-text text-muted"></div>
+            </div>
+
+            <div class="col-12">
+                <button class="btn btn-outline-secondary"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#locationPresetMapCreateCollapse"
+                        aria-expanded="false"
+                        aria-controls="locationPresetMapCreateCollapse"
+                        aria-label="Mở bản đồ để chọn tọa độ vị trí định sẵn mới">
+                    <i class="bi bi-map me-1"></i>Chọn vị trí trên bản đồ
+                </button>
+                <small class="text-muted ms-2">Bấm để mở bản đồ và chọn tọa độ.</small>
+            </div>
+            <div class="col-12">
+                <div id="locationPresetMapCreateCollapse" class="collapse">
+                    <div class="border rounded p-3 bg-light">
+                        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-2">
+                            <strong><i class="bi bi-geo me-1"></i>Bản đồ</strong>
+                            <button id="btnUseMyLocationCreate" type="button" class="btn btn-sm btn-outline-primary" aria-label="Dùng vị trí hiện tại trên bản đồ tạo mới">
+                                <i class="bi bi-crosshair me-1"></i>Vị trí hiện tại
+                            </button>
+                        </div>
+                        <div id="locationPresetMapCreate" class="location-presets-map"></div>
+                        <div class="location-presets-map-meta mt-2 small text-muted">
+                            <span id="locationPresetCoordsCreate">Chưa chọn vị trí</span>
+                            <span id="locationPresetStatusCreate"></span>
+                        </div>
+                        <div class="form-text mt-1">
+                            Bấm lên bản đồ để chọn tọa độ; trường <strong>Địa chỉ</strong> sẽ tự cập nhật.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" asp-for="Create.RadiusMeters">Bán kính (m)</label>
+                <input class="form-control" asp-for="Create.RadiusMeters" />
+                <span class="text-danger small" asp-validation-for="Create.RadiusMeters"></span>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" asp-for="Create.IsActive" />
+                    <label class="form-check-label" asp-for="Create.IsActive">Kích hoạt</label>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <button class="btn btn-primary" type="submit" aria-label="Tạo vị trí định sẵn">
+                    <i class="bi bi-check2-circle me-1"></i>Tạo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card uy-section-card">
+    <div class="card-header bg-light uy-section-card-header">
+        <strong class="uy-section-card-title"><i class="bi bi-table me-2"></i>Danh sách vị trí định sẵn</strong>
+    </div>
+    <div class="card-body">
+        @if (items.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <caption class="visually-hidden">Danh sách vị trí định sẵn</caption>
+                    <thead>
+                        <tr>
+                            <th class="location-preset-id-col">Id</th>
+                            <th>Tên</th>
+                            <th>Địa chỉ</th>
+                            <th class="location-preset-coordinate-col">Lat</th>
+                            <th class="location-preset-coordinate-col">Lng</th>
+                            <th class="location-preset-radius-col">Bán kính</th>
+                            <th class="location-preset-status-col">Trạng thái</th>
+                            <th class="text-end location-preset-actions-col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in items)
+                        {
+                            <tr>
+                                <td class="text-muted">@item.LocationPresetId</td>
+                                <td>@item.Name</td>
+                                <td class="text-muted small">@item.Address</td>
+                                <td class="text-muted small">@item.Latitude</td>
+                                <td class="text-muted small">@item.Longitude</td>
+                                <td class="text-muted small">@item.RadiusMeters</td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Không hoạt động</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-primary me-1"
+                                       asp-action="Edit"
+                                       asp-route-id="@item.LocationPresetId"
+                                       asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)"
+                                       aria-label="Cập nhật vị trí định sẵn @item.Name">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                aria-label="Xóa vị trí định sẵn @item.Name"
+                                                data-location-preset-delete
+                                                data-location-preset-id="@item.LocationPresetId"
+                                                data-location-preset-name="@item.Name">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <partial name="_Pagination" model="new PaginationViewModel { PageNumber = pageNumber, TotalPages = totalPages }" />
+        }
+        else
+        {
+            var emptyStateViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["EmptyIcon"] = "bi bi-geo-alt",
+                ["EmptyTitle"] = "Chưa có vị trí định sẵn nào.",
+                ["EmptyDescription"] = "Tạo vị trí định sẵn để tái sử dụng tọa độ và bán kính GPS cho các sự kiện."
+            };
+            <partial name="UI/_EmptyState" view-data="emptyStateViewData" />
+        }
+    </div>
+</div>
+
+<div class="modal fade" id="deleteLocationPresetModal" tabindex="-1" aria-labelledby="deleteLocationPresetModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content uy-confirm-modal">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteLocationPresetModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Xác nhận xóa vị trí định sẵn
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng modal xóa vị trí định sẵn"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Bạn có chắc chắn muốn xóa vị trí định sẵn này?</p>
+                <p class="mb-0 text-muted small" id="deleteLocationPresetName"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Hủy xóa vị trí định sẵn">
+                    <i class="bi bi-x-circle me-1"></i>Hủy
+                </button>
+                <form id="deleteLocationPresetForm" asp-action="Delete" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="deleteLocationPresetId" />
+                    <button type="submit" class="btn btn-danger" aria-label="Xác nhận xóa vị trí định sẵn">
+                        <i class="bi bi-trash me-1"></i>Xóa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="_GoogleMapsScript" />
+    <script src="~/js/event-location-picker.js" asp-append-version="true"></script>
+    <script src="~/js/location-presets-gps.js" asp-append-version="true"></script>
+    <script src="~/js/location-presets-index.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,665 @@
+@model UniYouth.Admin.Models.ViewModels.QrCodes.QrCodeListViewModel
+
+@{
+    ViewData["Title"] = "Quản lý QR Codes";
+
+    var newQrToken = TempData["NewQrToken"] as string;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    <link rel="stylesheet" href="~/css/qr-codes.css" asp-append-version="true" />
+}
+
+<partial name="_Alerts" />
+
+@* Hiển thị QR Token vừa tạo (chỉ hiển thị 1 lần) *@
+@if (!string.IsNullOrWhiteSpace(newQrToken))
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <h5 class="alert-heading">
+            <i class="bi bi-qr-code me-2"></i>QR Code mới đã được tạo!
+        </h5>
+        <p class="mb-2">
+            <strong>QR Token:</strong>
+            <code class="bg-dark text-white px-2 py-1 rounded">@newQrToken</code>
+        </p>
+        <p class="mb-0 small">
+            <i class="bi bi-info-circle me-1"></i>
+            Token này chỉ hiển thị một lần. Vui lòng lưu lại nếu cần.
+        </p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng thông báo mã QR"></button>
+    </div>
+}
+
+<div class="container-fluid">
+    @* Header và Breadcrumb *@
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-qr-code me-2"></i>QR Codes - @Model.EventName
+                    </h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-house-door"></i> Trang chủ
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a asp-controller="Events" asp-action="Index">Sự kiện</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                QR Codes - @Model.EventName
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <a asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId"
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Quay lại Sự kiện
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Thống kê Cards *@
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white mb-1">Tổng QR Codes</h6>
+                            <h3 class="mb-0">@Model.TotalQrCodes</h3>
+                        </div>
+                        <i class="bi bi-qr-code qr-stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white mb-1">Đang Hoạt động</h6>
+                            <h3 class="mb-0">@Model.ActiveQrCodes</h3>
+                        </div>
+                        <i class="bi bi-check-circle qr-stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white mb-1">Đã Hết hạn</h6>
+                            <h3 class="mb-0">@Model.ExpiredQrCodes</h3>
+                        </div>
+                        <i class="bi bi-clock-history qr-stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white mb-1">Đã Vô hiệu</h6>
+                            <h3 class="mb-0">@Model.DeactivatedQrCodes</h3>
+                        </div>
+                        <i class="bi bi-x-circle qr-stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Form Tạo QR Code *@
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-plus-circle me-2"></i>Tạo QR Code Mới
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Generate"
+                          asp-route-eventId="@Model.EventId"
+                          method="post"
+                          id="generateForm">
+                        @Html.AntiForgeryToken()
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="GenerateForm.ValidFrom" class="form-label">
+                                    <i class="bi bi-calendar-event me-1"></i>Hiệu lực từ
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="GenerateForm.ValidFrom"
+                                       type="text"
+                                       class="form-control js-ampm-datetime"
+                                       asp-format="{0:yyyy-MM-ddTHH:mm}"
+                                       aria-label="Thời gian bắt đầu hiệu lực mã QR"
+                                       autocomplete="off"
+                                       required>
+                                <span asp-validation-for="GenerateForm.ValidFrom" class="text-danger"></span>
+                                <div class="form-text">
+                                    Thời gian bắt đầu cho phép scan QR
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="GenerateForm.ValidUntil" class="form-label">
+                                    <i class="bi bi-calendar-x me-1"></i>Hiệu lực đến
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="GenerateForm.ValidUntil"
+                                       type="text"
+                                       class="form-control js-ampm-datetime"
+                                       asp-format="{0:yyyy-MM-ddTHH:mm}"
+                                       aria-label="Thời gian kết thúc hiệu lực mã QR"
+                                       autocomplete="off"
+                                       required>
+                                <span asp-validation-for="GenerateForm.ValidUntil" class="text-danger"></span>
+                                <div class="form-text">
+                                    Thời gian kết thúc - QR sẽ tự động hết hiệu lực
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="GenerateForm.ScanLimit" class="form-label">
+                                    <i class="bi bi-123 me-1"></i>Giới hạn Scan (Tùy chọn)
+                                </label>
+                                <input asp-for="GenerateForm.ScanLimit"
+                                       type="number"
+                                       class="form-control"
+                                       min="1"
+                                       max="10000"
+                                       placeholder="Không giới hạn">
+                                <span asp-validation-for="GenerateForm.ScanLimit" class="text-danger"></span>
+                                <div class="form-text">
+                                    Số lần scan tối đa cho phép
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="durationInfo" class="alert alert-info mb-3 qr-duration-info">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    <strong>Thời gian hiệu lực:</strong> <span id="durationText"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary" id="generateButton" aria-label="Tạo mã QR mới">
+                                    <i class="bi bi-qr-code me-1"></i>Tạo QR Code
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="setNowButton" aria-label="Đặt thời gian bắt đầu QR là hiện tại">
+                                    <i class="bi bi-clock me-1"></i>Bắt đầu ngay
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="set2HoursButton" aria-label="Đặt thời hạn hiệu lực QR là 2 giờ">
+                                    <i class="bi bi-hourglass-split me-1"></i>Hiệu lực 2 giờ
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Bộ lọc QR Codes (tách riêng khỏi phần Tạo) *@
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel me-2"></i>Bộ lọc QR Codes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" asp-action="Index">
+                        <input type="hidden" name="eventId" value="@Model.EventId" />
+                        <input type="hidden" name="pageNumber" value="1" />
+
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-3">
+                                <label for="qrIsActiveFilter" class="form-label small text-muted mb-1">Trạng thái</label>
+                                <select id="qrIsActiveFilter" class="form-select" name="isActive">
+                                    @if (Model.IsActive == null)
+                                    {
+                                        <option value="" selected>Tất cả</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="">Tất cả</option>
+                                    }
+
+                                    @if (Model.IsActive == true)
+                                    {
+                                        <option value="true" selected>Đang kích hoạt</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="true">Đang kích hoạt</option>
+                                    }
+
+                                    @if (Model.IsActive == false)
+                                    {
+                                        <option value="false" selected>Đã vô hiệu hóa</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="false">Đã vô hiệu hóa</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="qrValidNowFilter" class="form-label small text-muted mb-1">Hiệu lực theo thời gian</label>
+                                <select id="qrValidNowFilter" class="form-select" name="validNow">
+                                    @if (Model.ValidNow == null)
+                                    {
+                                        <option value="" selected>Tất cả</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="">Tất cả</option>
+                                    }
+
+                                    @if (Model.ValidNow == true)
+                                    {
+                                        <option value="true" selected>Đang hiệu lực (đang trong thời gian)</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="true">Đang hiệu lực (đang trong thời gian)</option>
+                                    }
+
+                                    @if (Model.ValidNow == false)
+                                    {
+                                        <option value="false" selected>Ngoài hiệu lực (chưa bắt đầu / đã hết hạn)</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="false">Ngoài hiệu lực (chưa bắt đầu / đã hết hạn)</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label for="qrPageSizeFilter" class="form-label small text-muted mb-1">Kích thước trang</label>
+                                <select id="qrPageSizeFilter" class="form-select" name="pageSize">
+                                    @foreach (var size in new[] { 10, 20, 50, 100 })
+                                    {
+                                        if (Model.PageSize == size)
+                                        {
+                                            <option value="@size" selected>@size</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@size">@size</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="btn-group" role="group" aria-label="Thao tác lọc mã QR">
+                                    <button type="submit" class="btn btn-primary" aria-label="Lọc danh sách mã QR">
+                                        <i class="bi bi-search me-1"></i>Lọc
+                                    </button>
+                                    <a class="btn btn-outline-secondary"
+                                       asp-action="Index"
+                                       asp-route-eventId="@Model.EventId"
+                                       aria-label="Xóa bộ lọc mã QR">
+                                        <i class="bi bi-x-circle me-1"></i>Xóa
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Danh sách QR Codes *@
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul me-2"></i>Danh sách QR Codes (@Model.TotalQrCodes)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.HasQrCodes)
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-qr-code qr-empty-icon"></i>
+                            <h5 class="text-muted mt-3">Chưa có QR Code nào</h5>
+                            <p class="text-muted">Sử dụng form phía trên để tạo QR Code cho sự kiện này.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <caption class="visually-hidden">Danh sách mã QR của sự kiện</caption>
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="qr-id-col">ID</th>
+                                        <th>Token Preview</th>
+                                        <th>Hiệu lực từ</th>
+                                        <th>Hiệu lực đến</th>
+                                        <th>Trạng thái</th>
+                                        <th>Số lần Scan</th>
+                                        <th>Người tạo</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var qr in Model.QrCodes.OrderByDescending(q => q.CreatedDate))
+                                    {
+                                        <tr class="@(qr.IsActive && !qr.IsExpired ? "table-success" : "")">
+                                            <td class="text-nowrap">
+                                                <span class="small text-muted">#@qr.QrId</span>
+                                            </td>
+                                            <td>
+                                                <code class="small">@qr.QrTokenPreview</code>
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    <i class="bi bi-calendar-check me-1"></i>
+                                                    @qr.ValidFrom.ToString("dd/MM/yyyy HH:mm")
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    <i class="bi bi-calendar-x me-1"></i>
+                                                    @qr.ValidUntil.ToString("dd/MM/yyyy HH:mm")
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <span class="badge @qr.StatusBadgeClass">
+                                                    <i class="bi @qr.StatusIcon me-1"></i>
+                                                    @qr.Status
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong>@qr.CurrentScans</strong>
+                                                @if (qr.ScanLimit.HasValue)
+                                                {
+                                                    <span class="text-muted">/ @qr.ScanLimit</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">/ ∞</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    @qr.CreatedByName<br />
+                                                    <span class="text-muted">@qr.CreatedDate?.ToString("dd/MM/yyyy HH:mm")</span>
+                                                </small>
+                                            </td>
+                                            <td>
+                                                 <button type="button"
+                                                         class="btn btn-sm btn-outline-primary me-1"
+                                                  data-bs-toggle="modal"
+                                                  data-bs-target="#qrDetailModal"
+                                                  data-qr-id="@qr.QrId"
+                                                          data-token-preview="@qr.QrTokenPreview"
+                                                          aria-label="Xem chi tiết mã QR @qr.QrId">
+                                                     <i class="bi bi-info-circle me-1"></i>Chi tiết
+                                                 </button>
+
+                                                @if (qr.CanDeactivate)
+                                                {
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            data-qr-deactivate
+                                                            data-qr-id="@qr.QrId"
+                                                            aria-label="Vô hiệu hóa mã QR @qr.QrId">
+                                                        <i class="bi bi-x-circle me-1"></i>Vô hiệu hóa
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">
+                                                        @if (qr.IsExpired)
+                                                        {
+                                                            <i class="bi bi-clock-history me-1"></i>
+                                            
+                                                            @:Đã hết hạn
+                                                        }
+                                                        else if (!qr.IsActive)
+                                                        {
+                                                            <i class="bi bi-x-circle me-1"></i>
+                                            
+                                                            @:Đã vô hiệu
+                                                        }
+                                                    </span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @* Pagination *@
+                        <partial name="_Pagination" model="new PaginationViewModel { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages }" />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modal Xác nhận Deactivate *@
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-labelledby="deactivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deactivateModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Xác nhận Vô hiệu hóa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng modal vô hiệu hóa mã QR"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn vô hiệu hóa QR Code này?</p>
+                <div class="alert alert-warning mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    <strong>Lưu ý:</strong> Sau khi vô hiệu hóa, QR Code sẽ không thể scan được nữa
+                    và không thể kích hoạt lại. Bạn cần tạo QR Code mới nếu muốn tiếp tục sử dụng.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Hủy vô hiệu hóa mã QR">
+                    <i class="bi bi-x-circle me-1"></i>Hủy
+                </button>
+                <form id="deactivateForm" asp-action="Deactivate" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="eventId" value="@Model.EventId" />
+                    <input type="hidden" name="qrId" id="deactivateQrId" />
+                    <button type="submit" class="btn btn-danger" aria-label="Xác nhận vô hiệu hóa mã QR">
+                        <i class="bi bi-x-circle me-1"></i>Vô hiệu hóa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modal Chi tiết QR *@
+<div class="modal fade" id="qrDetailModal" tabindex="-1" aria-labelledby="qrDetailModalLabel" aria-hidden="true"
+     data-qr-detail-url="@Url.Action("Detail", "QrCodes")">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content qr-detail-modal-content">
+            @* Header *@
+            <div class="modal-header qr-detail-modal-header">
+                <div class="d-flex align-items-center">
+                    <div class="qr-icon-wrapper me-3">
+                        <i class="bi bi-qr-code-scan"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0" id="qrDetailModalLabel">
+                            Chi tiết QR Code
+                        </h5>
+                        <small class="opacity-75" id="qrDetailId">#0</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng modal chi tiết mã QR"></button>
+            </div>
+
+            @* Body *@
+            <div class="modal-body p-0">
+                <div class="container-fluid">
+                    <div class="row g-0">
+                        @* Left Side - QR Code Image *@
+                        <div class="col-md-5 qr-image-section">
+                            <div class="qr-image-container">
+                                @* Loading State *@
+                                <div id="qrDetailImageLoading" class="qr-loading">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Đang tải...</span>
+                                    </div>
+                                    <p class="mt-3 text-muted">Đang tải QR Code...</p>
+                                </div>
+
+                                @* QR Image *@
+                                <div class="qr-image-wrapper d-none" id="qrImageWrapper">
+                                    <img id="qrDetailImage" class="qr-image" alt="Ảnh mã QR chi tiết" />
+                                    <div class="qr-overlay">
+                                        <button type="button" id="downloadQrBtn" class="btn btn-light btn-sm qr-download-button" aria-label="Tải xuống ảnh mã QR">
+                                            <i class="bi bi-download me-2"></i>Tải xuống
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Right Side - Details *@
+                        <div class="col-md-7 qr-details-section">
+                            <div class="p-4">
+                                @* Status Badge *@
+                                <div class="mb-4">
+                                    <div class="status-badge-container" id="qrDetailStatusContainer">
+                                        <span class="badge status-badge" id="qrDetailStatusBadge">
+                                            <i class="bi bi-circle-fill me-2 pulse"></i>
+                                            <span id="qrDetailStatus">-</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                @* Info Grid *@
+                                <div class="info-grid">
+                                    @* Validity Period *@
+                                    <div class="info-section mb-4">
+                                        <h6 class="info-section-title">
+                                            <i class="bi bi-calendar-range me-2"></i>Thời gian hiệu lực
+                                        </h6>
+                                        <div class="info-items">
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="bi bi-calendar-check text-success"></i>
+                                                    Bắt đầu
+                                                </div>
+                                                <div class="info-value" id="qrDetailValidFrom">-</div>
+                                            </div>
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="bi bi-calendar-x text-danger"></i>
+                                                    Kết thúc
+                                                </div>
+                                                <div class="info-value" id="qrDetailValidUntil">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @* Usage Statistics *@
+                                    <div class="info-section mb-4">
+                                        <h6 class="info-section-title">
+                                            <i class="bi bi-bar-chart me-2"></i>Thống kê sử dụng
+                                        </h6>
+                                        <div class="info-items">
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="bi bi-upc-scan text-primary"></i>
+                                                    Lượt scan
+                                                </div>
+                                                <div class="info-value">
+                                                    <span class="badge bg-primary-subtle text-primary fs-6" id="qrDetailScans">0 / ∞</span>
+                                                </div>
+                                            </div>
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="bi bi-flag text-warning"></i>
+                                                    Trạng thái
+                                                </div>
+                                                <div class="info-value">
+                                                    <small id="qrDetailFlags" class="text-muted">-</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @* Creation Info *@
+                                    <div class="info-section">
+                                        <h6 class="info-section-title">
+                                            <i class="bi bi-info-circle me-2"></i>Thông tin tạo
+                                        </h6>
+                                        <div class="info-items">
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="bi bi-person text-info"></i>
+                                                    Người tạo
+                                                </div>
+                                                <div class="info-value" id="qrDetailCreatedBy">-</div>
+                                            </div>
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="bi bi-clock text-secondary"></i>
+                                                    Ngày tạo
+                                                </div>
+                                                <div class="info-value" id="qrDetailCreatedDate">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Footer *@
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Đóng chi tiết mã QR">
+                    <i class="bi bi-x-lg me-2"></i>Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="~/js/qr-codes-index.js" asp-append-version="true"></script>
+}

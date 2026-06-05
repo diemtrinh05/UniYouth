@@ -1,0 +1,185 @@
+﻿@model UniYouth.Admin.Models.DTOs.AdminUsers.AdminUserDetailDto
+@inject IConfiguration Configuration
+@{
+    ViewData["Title"] = "Chi tiết người dùng";
+    ViewData["PageIcon"] = "bi bi-person-badge";
+    ViewData["PageSubtitle"] = "Xem thông tin hồ sơ, vai trò và trạng thái tài khoản người dùng.";
+    var returnUrl = ViewBag.ReturnUrl as string;
+    var isActive = Model.Status.HasValue ? Model.Status.Value == 1 : true;
+
+    var avatarUrl = Model.AvatarUrl;
+    var avatarSrc = Html.ResolveApiAssetUrl(avatarUrl);
+
+    if (!string.IsNullOrWhiteSpace(avatarSrc))
+    {
+        avatarSrc = avatarSrc + (avatarSrc!.Contains('?') ? "&" : "?") + "v=" + DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+    }
+}
+
+<partial name="_Alerts" />
+
+<div class="d-flex justify-content-between align-items-start gap-3 mb-4 flex-wrap">
+    <partial name="UI/_PageHeader" />
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-primary me-2"
+           asp-action="EditProfile"
+           asp-route-id="@Model.UserId"
+           asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)"
+           aria-label="Chỉnh sửa hồ sơ người dùng @Model.FullName">
+            <i class="bi bi-pencil-square me-1"></i>Chỉnh sửa
+        </a>
+        @if (!string.IsNullOrWhiteSpace(returnUrl))
+        {
+            <a class="btn btn-outline-secondary" href="@returnUrl" aria-label="Quay lại trang trước">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại
+            </a>
+        }
+        else
+        {
+            <a class="btn btn-outline-secondary" asp-action="Index" aria-label="Quay lại danh sách người dùng">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại
+            </a>
+        }
+    </div>
+</div>
+
+<div class="card uy-section-card">
+    <div class="card-header uy-section-card-header d-flex justify-content-between align-items-center">
+        <strong class="uy-section-card-title">ID: @Model.UserId</strong>
+        <span class="badge @(isActive ? "bg-success" : "bg-secondary")">
+            @(isActive ? "Hoạt động" : "Không hoạt động")
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-3 text-center">
+                @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
+                {
+                    <img src="@avatarSrc" class="img-fluid rounded-circle border user-detail-avatar" alt="Ảnh đại diện của @Model.FullName" />
+                }
+                else
+                {
+                    <div class="rounded-circle border bg-light d-inline-flex align-items-center justify-content-center user-detail-avatar-placeholder">
+                        <i class="bi bi-person fs-1 text-muted"></i>
+                    </div>
+                }
+            </div>
+
+            <div class="col-md-9">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Mã/Tài khoản</dt>
+                    <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.Code) ? Model.Code : "-")</dd>
+
+                    <dt class="col-sm-4 text-muted">Họ tên</dt>
+                    <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.FullName) ? Model.FullName : "-")</dd>
+
+                    <dt class="col-sm-4 text-muted">Email</dt>
+                    <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.Email) ? Model.Email : "-")</dd>
+
+                    <dt class="col-sm-4 text-muted">SĐT</dt>
+                    <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.Phone) ? Model.Phone : "-")</dd>
+
+                    <dt class="col-sm-4 text-muted">Giới tính</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.Gender.HasValue)
+                        {
+                            @(Model.Gender.Value ? "Nam" : "Nữ")
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted">Ngày sinh</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.DateOfBirth.HasValue)
+                        {
+                            @Model.DateOfBirth.Value.ToString("dd/MM/yyyy")
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted">Địa chỉ</dt>
+                    <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.Address) ? Model.Address : "-")</dd>
+
+                    <dt class="col-sm-4 text-muted">Roles</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.Roles != null && Model.Roles.Count > 0)
+                        {
+                            @string.Join(", ", Model.Roles)
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted">Đơn vị</dt>
+                    <dd class="col-sm-8">
+                        <div>@(!string.IsNullOrWhiteSpace(Model.UnitName) ? Model.UnitName : "-")</div>
+                        @if (!string.IsNullOrWhiteSpace(Model.InstituteName))
+                        {
+                            <div class="text-muted small">@Model.InstituteName</div>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted">Chức vụ</dt>
+                    <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.Position) ? Model.Position : "-")</dd>
+
+                    <dt class="col-sm-4 text-muted">Ngày tham gia</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.JoinDate.HasValue)
+                        {
+                            @Model.JoinDate.Value.ToString("dd/MM/yyyy")
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted">Đăng nhập gần nhất</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.LastLoginDate.HasValue)
+                        {
+                            @Model.LastLoginDate.Value.ToString("dd/MM/yyyy HH:mm")
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted">Tạo lúc</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.CreatedDate.HasValue)
+                        {
+                            @Model.CreatedDate.Value.ToString("dd/MM/yyyy HH:mm")
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted">Cập nhật lúc</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.UpdatedDate.HasValue)
+                        {
+                            @Model.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+

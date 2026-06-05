@@ -1,0 +1,144 @@
+﻿@model UniYouth.Admin.Models.ViewModels.EventTypes.EventTypesIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý loại sự kiện";
+    ViewData["PageIcon"] = "bi bi-tags";
+}
+
+<partial name="_Alerts" />
+
+<partial name="UI/_PageHeader" />
+
+@if (ViewBag.IsAdmin == true)
+{
+    <div class="card mb-4 uy-section-card">
+        <div class="card-header bg-light uy-section-card-header">
+            <strong class="uy-section-card-title"><i class="bi bi-plus-circle me-2"></i>Tạo loại sự kiện</strong>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post" class="row g-3">
+                @Html.AntiForgeryToken()
+
+                <div class="col-md-5">
+                    <label class="form-label" asp-for="Create.TypeName">Tên loại</label>
+                    <input class="form-control" asp-for="Create.TypeName" />
+                    <span class="text-danger small" asp-validation-for="Create.TypeName"></span>
+                </div>
+
+                <div class="col-md-5">
+                    <label class="form-label" asp-for="Create.Description">Mô tả (tùy chọn)</label>
+                    <input class="form-control" asp-for="Create.Description" />
+                    <span class="text-danger small" asp-validation-for="Create.Description"></span>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" type="submit" aria-label="Tạo loại sự kiện mới">
+                        <i class="bi bi-check2-circle me-1"></i>Tạo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+<div class="card uy-section-card">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center uy-section-card-header">
+        <strong class="uy-section-card-title"><i class="bi bi-list-ul me-2"></i>Danh sách loại sự kiện</strong>
+        <span class="text-muted small">Tổng: @Model.Items.Count</span>
+    </div>
+    <div class="card-body">
+        @if (Model.Items.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <caption class="visually-hidden">Danh sách loại sự kiện</caption>
+                    <thead>
+                        <tr>
+                            <th class="event-type-id-col">TypeId</th>
+                            <th>Tên loại</th>
+                            <th>Mô tả</th>
+                            <th class="text-end event-type-actions-col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items.OrderBy(x => x.TypeId))
+                        {
+                            var updateFormId = $"update-event-type-{item.TypeId}";
+                            var deleteFormId = $"delete-event-type-{item.TypeId}";
+                            <tr>
+                                <td class="text-muted">@item.TypeId</td>
+                                <td>
+                                    @if (ViewBag.IsAdmin == true)
+                                    {
+                                        <input class="form-control form-control-sm"
+                                               name="TypeName"
+                                               value="@item.TypeName"
+                                               form="@updateFormId"
+                                               aria-label="Tên loại sự kiện @item.TypeName" />
+                                    }
+                                    else
+                                    {
+                                        @item.TypeName
+                                    }
+                                </td>
+                                <td>
+                                    @if (ViewBag.IsAdmin == true)
+                                    {
+                                        <input class="form-control form-control-sm"
+                                               name="Description"
+                                               value="@item.Description"
+                                               form="@updateFormId"
+                                               aria-label="Mô tả loại sự kiện @item.TypeName" />
+                                    }
+                                    else
+                                    {
+                                        @item.Description
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    @if (ViewBag.IsAdmin == true)
+                                    {
+                                        <form id="@updateFormId" asp-action="Update" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="TypeId" value="@item.TypeId" />
+                                            <button class="btn btn-sm btn-outline-secondary me-1"
+                                                    type="submit"
+                                                    title="Cập nhật"
+                                                    aria-label="Cập nhật loại sự kiện @item.TypeName">
+                                                <i class="bi bi-save"></i>
+                                            </button>
+                                        </form>
+                                        <form id="@deleteFormId" asp-action="Delete" method="post" class="d-inline"
+                                              onsubmit="return confirm('Xóa loại sự kiện này?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="typeId" value="@item.TypeId" />
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    type="submit"
+                                                    title="Xóa"
+                                                    aria-label="Xóa loại sự kiện @item.TypeName">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            var emptyStateViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["EmptyIcon"] = "bi bi-inbox",
+                ["EmptyTitle"] = "Chưa có loại sự kiện nào.",
+                ["EmptyDescription"] = "Tạo loại sự kiện để chuẩn hóa phân loại và báo cáo sự kiện."
+            };
+            <partial name="UI/_EmptyState" view-data="emptyStateViewData" />
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

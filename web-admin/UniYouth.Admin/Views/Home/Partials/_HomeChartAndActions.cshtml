@@ -1,0 +1,45 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Home.HomeOverviewViewModel
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="card uy-section-card h-100">
+            <div class="card-header uy-section-card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="uy-section-card-title mb-0">
+                        <i class="bi bi-bar-chart-line me-2"></i>Thống kê sự kiện
+                    </h6>
+                    <div class="btn-group btn-group-sm home-period-toggle" role="group" aria-label="Chọn khoảng thời gian thống kê sự kiện">
+                        <button type="button" class="btn btn-outline-secondary active" data-period="week" aria-label="Xem thống kê sự kiện theo tuần">Tuần</button>
+                        <button type="button" class="btn btn-outline-secondary" data-period="month" aria-label="Xem thống kê sự kiện theo tháng">Tháng</button>
+                        <button type="button" class="btn btn-outline-secondary" data-period="quarter" aria-label="Xem thống kê sự kiện theo quý">Quý</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="home-chart-frame">
+                    <canvas id="eventsChart" role="img" aria-label="Biểu đồ thống kê số sự kiện và lượt điểm danh hợp lệ theo thời gian"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card uy-section-card mb-3">
+            <div class="card-header uy-section-card-header">
+                <h6 class="uy-section-card-title mb-0">
+                    <i class="bi bi-lightning-charge me-2"></i>Thao tác nhanh
+                </h6>
+            </div>
+            <div class="card-body p-3">
+                <div class="d-grid gap-2">
+                    <a asp-controller="Events" asp-action="Create" class="btn btn-primary btn-action" aria-label="Tạo sự kiện mới">
+                        <i class="bi bi-plus-circle me-2"></i>Tạo sự kiện mới
+                    </a>
+                    <a asp-controller="Reports" asp-action="Index" class="btn btn-outline-secondary btn-action" aria-label="Xem báo cáo">
+                        <i class="bi bi-graph-up me-2"></i>Xem báo cáo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

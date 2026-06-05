@@ -1,0 +1,209 @@
+@model UniYouth.Admin.Models.ViewModels.Notifications.NotificationListViewModel
+@{
+    ViewData["Title"] = "Thông báo";
+    ViewData["PageSubtitle"] = "Theo dõi thông báo hệ thống và cập nhật trạng thái đã đọc.";
+    ViewData["PageIcon"] = "bi bi-bell";
+    var notifications = Model.Notifications ?? new List<UniYouth.Admin.Models.ViewModels.Notifications.NotificationListItemViewModel>();
+    var unreadOnPage = notifications.Count(n => !n.IsRead);
+    var hasErrorMessage = !string.IsNullOrWhiteSpace(TempData.Peek("ErrorMessage") as string);
+    var showServerErrorState = hasErrorMessage && !notifications.Any();
+
+    var unreadCountUrl = Url.Action("UnreadCountAjax", "Notifications") ?? "/Notifications/ajax/unread-count";
+    var markAllReadUrl = Url.Action("MarkAllReadAjax", "Notifications") ?? "/Notifications/ajax/read-all";
+    var loginUrl = Url.Action("Login", "Account") ?? "/Account/Login";
+}
+
+<partial name="_Alerts" />
+
+<div id="notificationPageRoot"
+     data-unread-count-url="@unreadCountUrl"
+     data-mark-all-read-url="@markAllReadUrl"
+     data-login-url="@loginUrl">
+
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-3 flex-wrap">
+        <partial name="UI/_PageHeader" />
+        <div class="card uy-section-card px-3 py-2 text-end">
+            <div class="small text-muted">Chưa đọc (trang hiện tại)</div>
+            <div id="unreadOnPageValue" class="h5 mb-0 text-danger">@unreadOnPage</div>
+        </div>
+    </div>
+
+    <div class="card mb-4 uy-section-card">
+        <div class="card-header bg-white uy-section-card-header">
+            <h5 class="mb-0 uy-section-card-title">
+                <i class="bi bi-funnel me-2"></i>Bộ lọc
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end uy-filter-shell">
+                <div class="col-md-4">
+                    <label for="isReadFilter" class="form-label">Trạng thái đọc</label>
+                    <select id="isReadFilter" class="form-select">
+                        <option value="" selected='@(Model.IsRead == null ? "selected" : null)'>Tất cả</option>
+                        <option value="false" selected='@(Model.IsRead == false ? "selected" : null)'>Chưa đọc</option>
+                        <option value="true" selected='@(Model.IsRead == true ? "selected" : null)'>Đã đọc</option>
+                    </select>
+                    <div class="form-text">Lọc trên danh sách trang hiện tại.</div>
+                </div>
+                <div class="col-md-3">
+                    <form method="get" asp-action="Index" data-loading-form>
+                        <input type="hidden" name="pageNumber" value="1" />
+                        <label for="pageSize" class="form-label">Số dòng</label>
+                        <div class="input-group">
+                            <select id="pageSize" name="pageSize" class="form-select">
+                                <option value="10" selected='@(Model.PageSize == 10 ? "selected" : null)'>10</option>
+                                <option value="20" selected='@(Model.PageSize == 20 ? "selected" : null)'>20</option>
+                                <option value="50" selected='@(Model.PageSize == 50 ? "selected" : null)'>50</option>
+                            </select>
+                            <button type="submit" class="btn btn-outline-primary" aria-label="Áp dụng số dòng thông báo mỗi trang">
+                                Áp dụng
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-5 text-md-end">
+                    <span class="text-muted small">
+                        Tổng bản ghi (API): <strong>@Model.TotalCount</strong>
+                    </span>
+                    <br />
+                    <span class="text-muted small">
+                        Chưa đọc (API): <strong id="unreadCountApiValue">@Model.UnreadCount</strong>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card uy-section-card">
+        <div class="card-header bg-white uy-section-card-header d-flex justify-content-between align-items-center gap-3 flex-wrap">
+            <h5 class="mb-0 uy-section-card-title">
+                <i class="bi bi-list-ul me-2"></i>Danh sách thông báo
+            </h5>
+            <div class="d-flex align-items-center gap-2">
+                <button id="markAllReadButton" type="button" class="btn btn-sm btn-outline-primary" aria-label="Đánh dấu tất cả thông báo là đã đọc">
+                    Đánh dấu tất cả đã đọc
+                </button>
+                <span id="visibleCountText" class="small text-muted"></span>
+            </div>
+        </div>
+        <div class="card-body position-relative">
+            <div id="notificationActionFeedback" class="alert d-none mb-3" role="alert"></div>
+
+            <div id="notificationLoadingSkeleton" class="notification-skeleton-wrapper">
+                @for (var i = 0; i < 3; i++)
+                {
+                    <div class="notification-item border rounded p-3 mb-3">
+                        <div class="notification-skeleton-line skeleton-title mb-2"></div>
+                        <div class="notification-skeleton-line skeleton-content mb-2"></div>
+                        <div class="notification-skeleton-line skeleton-meta"></div>
+                    </div>
+                }
+            </div>
+
+            @if (showServerErrorState)
+            {
+                <div id="serverErrorState" class="notification-state notification-error-state">
+                    <i class="bi bi-exclamation-triangle display-5 text-danger"></i>
+                    <h5 class="mt-3 mb-2">Không thể tải danh sách thông báo</h5>
+                    <p class="text-muted mb-3">Vui lòng thử lại sau hoặc tải lại trang.</p>
+                    <a class="btn btn-outline-danger" href="@Url.Action("Index", "Notifications", new { pageNumber = Model.PageNumber, pageSize = Model.PageSize })">
+                        Thử lại
+                    </a>
+                </div>
+            }
+            else if (notifications.Any())
+            {
+                <div id="notificationList" class="notification-list">
+                    @foreach (var item in notifications)
+                    {
+                        <div class="notification-item border rounded p-3 mb-3"
+                             data-notification-item
+                             data-notification-id="@item.NotificationId"
+                             data-is-read="@(item.IsRead ? "true" : "false")">
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+                                <div class="me-3 flex-grow-1">
+                                    <h6 class="mb-1">
+                                        <span data-read-badge class="badge @(item.IsRead ? "bg-secondary" : "bg-danger") me-2">
+                                            @(item.IsRead ? "Đã đọc" : "Chưa đọc")
+                                        </span>
+                                        @item.Title
+                                    </h6>
+                                    <p class="mb-2 text-muted">@item.Content</p>
+                                    <div class="small text-muted d-flex flex-wrap gap-3">
+                                        <span><i class="bi bi-clock me-1"></i>@item.CreatedDateDisplay</span>
+                                        <span><i class="bi bi-tag me-1"></i>@(item.NotificationType ?? "-")</span>
+                                        <span><i class="bi bi-flag me-1"></i>@item.PriorityDisplay</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column align-items-end gap-2">
+                                    @if (!item.IsRead)
+                                    {
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-success"
+                                                data-mark-read-btn
+                                                data-mark-read-url="@(Url.Action("MarkReadAjax", "Notifications", new { id = item.NotificationId }) ?? $"/Notifications/ajax/{item.NotificationId}/read")"
+                                                aria-label="Đánh dấu thông báo @item.NotificationId là đã đọc">
+                                            Đánh dấu đã đọc
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled aria-label="Thông báo @item.NotificationId đã đọc">
+                                            Đã đọc
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div id="filteredEmptyState" class="notification-state notification-empty-state d-none">
+                    <i class="bi bi-funnel display-5 text-muted"></i>
+                    <h5 class="mt-3 mb-2">Không có thông báo phù hợp bộ lọc</h5>
+                    <p class="text-muted mb-0">Hãy đổi bộ lọc để xem thêm thông báo.</p>
+                </div>
+
+                <div id="clientErrorState" class="notification-state notification-error-state d-none">
+                    <i class="bi bi-exclamation-octagon display-5 text-danger"></i>
+                    <h5 class="mt-3 mb-2">Có lỗi khi xử lý dữ liệu</h5>
+                    <p class="text-muted mb-3">Vui lòng thử lại thao tác hoặc tải lại trang.</p>
+                    <button id="notificationRetryButton" type="button" class="btn btn-outline-danger" aria-label="Thử lại thao tác tải thông báo">
+                        Thử lại
+                    </button>
+                </div>
+
+                <div id="notificationPaginationContainer">
+                    <partial name="_Pagination" model="new PaginationViewModel { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages }" />
+                </div>
+            }
+            else
+            {
+                <div id="baseEmptyState" class="notification-state notification-empty-state">
+                    <i class="bi bi-inbox display-5 text-muted"></i>
+                    <h5 class="mt-3 mb-2">Chưa có thông báo nào</h5>
+                    <p class="text-muted mb-0">Khi có thông báo mới, hệ thống sẽ hiển thị tại đây.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div id="pageLoadingState" class="page-loading d-none">
+        <div class="text-center page-loading-content">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="mt-2 text-muted">Đang tải dữ liệu...</div>
+            <div id="pageLoadingRetry" class="mt-3 d-none">
+                <div class="small text-muted mb-2">Nếu tải quá lâu, bạn có thể thử lại.</div>
+                <button id="pageLoadingRetryBtn" type="button" class="btn btn-sm btn-outline-secondary" aria-label="Tải lại trang thông báo">
+                    Tải lại trang
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/notifications-index.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,61 @@
+@{
+    object? ReadMessage(string key)
+    {
+        if (TempData.ContainsKey(key))
+        {
+            return TempData[key];
+        }
+
+        return ViewData[key];
+    }
+
+    string? NormalizeMessage(object? value)
+    {
+        var s = value as string;
+        if (string.IsNullOrWhiteSpace(s)) return null;
+
+        // Một số chỗ hiện đang join lỗi bằng "<br/>" để hiển thị nhiều dòng.
+        // Chuẩn hóa về newline và render với CSS "white-space: pre-line" để vừa an toàn (encode) vừa dễ đọc.
+        return s
+            .Replace("<br/>", "\n", StringComparison.OrdinalIgnoreCase)
+            .Replace("<br />", "\n", StringComparison.OrdinalIgnoreCase)
+            .Replace("<br>", "\n", StringComparison.OrdinalIgnoreCase)
+            .Trim();
+    }
+
+    // Đọc (consume) TempData để thông báo không bị "dính" sang request/trang tiếp theo.
+    // Không dùng Peek(), vì Peek sẽ giữ lại dữ liệu trong TempData.
+    var successMessage = NormalizeMessage(ReadMessage("SuccessMessage"));
+    var errorMessage = NormalizeMessage(ReadMessage("ErrorMessage"));
+    var infoMessage = NormalizeMessage(ReadMessage("InfoMessage"));
+}
+
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="uy-alert-message">
+            <i class="bi bi-check-circle me-2"></i>@successMessage
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng thông báo thành công"></button>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="uy-alert-message">
+            <i class="bi bi-exclamation-circle me-2"></i>@errorMessage
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng thông báo lỗi"></button>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(infoMessage))
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <div class="uy-alert-message">
+            <i class="bi bi-info-circle me-2"></i>@infoMessage
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng thông báo"></button>
+    </div>
+}

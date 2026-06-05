@@ -1,0 +1,26 @@
+@{
+    ViewData["Title"] = "Chưa đăng nhập";
+    ViewData["AuthStatusBodyClass"] = "auth-status-page-unauthorized";
+    Layout = "_AuthStatusLayout";
+}
+
+<main class="auth-status-container">
+    <section class="auth-status-card" aria-labelledby="unauthorizedTitle">
+        <div class="auth-status-icon" aria-hidden="true">
+            <i class="bi bi-lock"></i>
+        </div>
+
+        <div class="auth-status-code">401</div>
+        <h1 class="auth-status-title" id="unauthorizedTitle">Chưa đăng nhập</h1>
+
+        <p class="auth-status-message">
+            Bạn cần đăng nhập để truy cập trang này.<br>
+            Vui lòng đăng nhập bằng tài khoản Admin hoặc Cán bộ.
+        </p>
+
+        <a href="/Account/Login" class="btn btn-primary auth-status-button">
+            <i class="bi bi-box-arrow-in-right me-2"></i>
+            Đăng nhập ngay
+        </a>
+    </section>
+</main>

@@ -1,0 +1,25 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Attendance.EventAttendanceListViewModel
+
+<div class="attendance-inline-note mb-3">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+        <div>
+            <div class="attendance-inline-note-title">
+                <i class="bi bi-shield-exclamation"></i>
+                <span>Suspicious review nhanh</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge bg-dark">Cần review: @Model.ReviewRequiredAttendances</span>
+                <span class="badge bg-danger">High/Critical: @Model.HighPriorityAttendances</span>
+                <span class="badge bg-warning text-dark">Review: @Model.FaceReviewAttendances</span>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Mismatch: @Model.FaceMismatchAttendances</span>
+                <span class="badge bg-secondary">Lỗi kỹ thuật/chất lượng ảnh: @Model.TechnicalIssueAttendances</span>
+            </div>
+            <small class="attendance-inline-note-helper">
+                Ưu tiên mở modal chi tiết của các case High/Critical hoặc Mismatch để xem face metadata, risk reasons và thiết bị/IP.
+            </small>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-start">
+            <span class="badge bg-light text-dark border">Theo dõi nhanh bằng risk level và modal chi tiết</span>
+        </div>
+    </div>
+</div>

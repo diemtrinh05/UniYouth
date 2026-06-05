@@ -1,0 +1,301 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Reports.EventAttendanceReportViewModel
+@{
+    ViewData["Title"] = $"Chi tiết báo cáo - {Model.EventName}";
+    ViewData["PageIcon"] = "bi bi-bar-chart-fill";
+    ViewData["PageSubtitle"] = "Phân tích chi tiết tỷ lệ tham gia và điểm danh của sự kiện.";
+}
+
+<div class="report-detail-page">
+
+@* Breadcrumb *@
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="@Url.Action("Index", "Reports")">
+                <i class="bi bi-graph-up me-1"></i>Báo cáo thống kê
+            </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Chi tiết báo cáo</li>
+    </ol>
+</nav>
+
+@* Tiêu đề trang *@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <partial name="UI/_PageHeader" />
+    <div role="group" aria-label="Thao tác báo cáo">
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary" aria-label="Quay lại danh sách báo cáo thống kê">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại
+        </a>
+    </div>
+</div>
+
+<partial name="_Alerts" />
+
+@* Thông tin sự kiện *@
+<div class="card mb-4 uy-section-card">
+    <div class="card-header bg-light uy-section-card-header">
+        <h4 class="mb-0 uy-section-card-title">
+            <i class="bi bi-calendar-event me-2"></i>@Model.EventName
+        </h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p class="mb-2">
+                    <strong><i class="bi bi-hash me-2"></i>ID Sự kiện:</strong>
+                    <span class="text-muted">@Model.EventId</span>
+                </p>
+                <p class="mb-2">
+                    <strong><i class="bi bi-clock me-2"></i>Thời gian:</strong>
+                    <span class="text-muted">@Model.StartTimeFormatted</span>
+                </p>
+            </div>
+            <div class="col-md-6">
+                <p class="mb-2">
+                    <strong><i class="bi bi-people me-2"></i>Giới hạn người tham gia:</strong>
+                    <span class="text-muted">@Model.MaxParticipantsDisplay</span>
+                </p>
+                @if (Model.RegistrationUtilization.HasValue)
+                {
+                    <p class="mb-2">
+                        <strong><i class="bi bi-graph-up me-2"></i>Tỷ lệ đăng ký:</strong>
+                        <span class="text-muted">@Model.RegistrationUtilizationFormatted</span>
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Thẻ thống kê *@
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        @{
+            var registrationsMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["MetricLabel"] = "Tổng đăng ký",
+                ["MetricValue"] = Model.TotalRegistrations.ToString(),
+                ["MetricHelper"] = "Sinh viên đã đăng ký",
+                ["MetricIcon"] = "bi bi-people-fill",
+                ["MetricTone"] = "primary"
+            };
+        }
+        <partial name="UI/_MetricCard" view-data="registrationsMetricViewData" />
+    </div>
+    <div class="col-md-3">
+        @{
+            var validMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["MetricLabel"] = "Điểm danh hợp lệ",
+                ["MetricValue"] = Model.ValidAttendances.ToString(),
+                ["MetricHelper"] = "Check-in thành công",
+                ["MetricIcon"] = "bi bi-check-circle-fill",
+                ["MetricTone"] = "success"
+            };
+        }
+        <partial name="UI/_MetricCard" view-data="validMetricViewData" />
+    </div>
+    <div class="col-md-3">
+        @{
+            var invalidMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["MetricLabel"] = "Không hợp lệ",
+                ["MetricValue"] = Model.InvalidAttendances.ToString(),
+                ["MetricHelper"] = "Check-in thất bại",
+                ["MetricIcon"] = "bi bi-x-circle-fill",
+                ["MetricTone"] = "danger"
+            };
+        }
+        <partial name="UI/_MetricCard" view-data="invalidMetricViewData" />
+    </div>
+    <div class="col-md-3">
+        @{
+            var absentMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["MetricLabel"] = "Vắng mặt",
+                ["MetricValue"] = Model.NotCheckedIn.ToString(),
+                ["MetricHelper"] = "Không check-in",
+                ["MetricIcon"] = "bi bi-exclamation-circle-fill",
+                ["MetricTone"] = "warning"
+            };
+        }
+        <partial name="UI/_MetricCard" view-data="absentMetricViewData" />
+    </div>
+</div>
+
+@* Phân tích tỷ lệ tham gia *@
+<div class="card mb-4 uy-section-card">
+    <div class="card-header bg-white uy-section-card-header">
+        <h5 class="mb-0 uy-section-card-title">
+            <i class="bi bi-percent me-2"></i>Phân tích tỷ lệ tham gia
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-3">
+                    <span class="@Model.PerformanceTextClass">@Model.AttendanceRateFormatted</span>
+                </h2>
+                <div class="progress mb-3 uy-progress-lg">
+                    <span id="attendanceRateProgressDescription" class="visually-hidden">
+                        Tỷ lệ điểm danh hợp lệ của sự kiện @Model.EventName là @Model.AttendanceRateFormatted.
+                    </span>
+                    <div class="progress-bar @Model.ProgressBarClass progress-bar-striped progress-bar-animated"
+                         role="progressbar"
+                         data-progress-width="@Model.AttendanceRate"
+                         aria-valuenow="@Model.AttendanceRate"
+                         aria-valuemin="0"
+                         aria-valuemax="100"
+                         aria-label="Tỷ lệ điểm danh hợp lệ"
+                         aria-describedby="attendanceRateProgressDescription">
+                        @Model.AttendanceRateFormatted
+                    </div>
+                </div>
+                <p class="text-muted mb-0">
+                    <small>
+                        <i class="bi bi-info-circle me-1"></i>
+                        Công thức: (Điểm danh hợp lệ / Tổng đăng ký) × 100
+                    </small>
+                </p>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6 class="card-title text-uppercase mb-3">Đánh giá</h6>
+                        <div class="@Model.PerformanceTextClass">
+                            <i class="bi @Model.PerformanceIcon display-3"></i>
+                            <h4 class="mt-2 mb-0">@Model.PerformanceRating</h4>
+                            @if (Model.AttendanceRate >= 70)
+                            {
+                                <small class="text-muted">Tỷ lệ tham gia cao</small>
+                            }
+                            else if (Model.AttendanceRate >= 50)
+                            {
+                                <small class="text-muted">Còn chỗ cải thiện</small>
+                            }
+                            else
+                            {
+                                <small class="text-muted">Cần nâng cao tham gia</small>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Bảng phân tích chi tiết *@
+<div class="card mb-4 uy-section-card">
+    <div class="card-header bg-white uy-section-card-header">
+        <h5 class="mb-0 uy-section-card-title">
+            <i class="bi bi-pie-chart-fill me-2"></i>Phân tích chi tiết
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover mb-0">
+                <caption class="visually-hidden">Bảng phân tích chi tiết điểm danh</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th>Phân loại</th>
+                        <th class="text-center">Số lượng</th>
+                        <th class="text-center">Tỷ lệ (%)</th>
+                        <th>Mô tả</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <span class="badge bg-success me-2">Hợp lệ</span>
+                            <strong>Điểm danh hợp lệ</strong>
+                        </td>
+                        <td class="text-center">
+                            <strong>@Model.ValidAttendances</strong>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-success">@Model.GetPercentage(Model.ValidAttendances).ToString("F1")%</span>
+                        </td>
+                        <td class="text-muted">
+                            <small>Sinh viên check-in đúng thời gian và địa điểm</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="badge bg-danger me-2">Không hợp lệ</span>
+                            <strong>Điểm danh không hợp lệ</strong>
+                        </td>
+                        <td class="text-center">
+                            <strong>@Model.InvalidAttendances</strong>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-danger">@Model.GetPercentage(Model.InvalidAttendances).ToString("F1")%</span>
+                        </td>
+                        <td class="text-muted">
+                            <small>Check-in nhưng không đáp ứng yêu cầu (sai giờ, sai vị trí)</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="badge bg-warning text-dark me-2">Vắng mặt</span>
+                            <strong>Không check-in</strong>
+                        </td>
+                        <td class="text-center">
+                            <strong>@Model.NotCheckedIn</strong>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-warning text-dark">@Model.GetPercentage(Model.NotCheckedIn).ToString("F1")%</span>
+                        </td>
+                        <td class="text-muted">
+                            <small>Đăng ký nhưng không thực hiện check-in</small>
+                        </td>
+                    </tr>
+                    <tr class="table-active">
+                        <td>
+                            <strong>Tổng lượt check-in</strong>
+                        </td>
+                        <td class="text-center">
+                            <strong>@Model.TotalCheckIns</strong>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">@Model.GetPercentage(Model.TotalCheckIns).ToString("F1")%</span>
+                        </td>
+                        <td class="text-muted">
+                            <small>Tổng số sinh viên đã thực hiện check-in (hợp lệ + không hợp lệ)</small>
+                        </td>
+                    </tr>
+                    <tr class="table-primary">
+                        <td>
+                            <strong>Tổng đăng ký</strong>
+                        </td>
+                        <td class="text-center">
+                            <strong>@Model.TotalRegistrations</strong>
+                        </td>
+                        <td class="text-center">
+                            <strong>100.0%</strong>
+                        </td>
+                        <td class="text-muted">
+                            <small>Tổng số sinh viên đã đăng ký tham gia sự kiện</small>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* Nút thao tác *@
+<div class="d-flex justify-content-between mb-4" role="group" aria-label="Thao tác cuối báo cáo">
+    <a href="@Url.Action("Index")" class="btn btn-outline-secondary" aria-label="Quay lại danh sách báo cáo thống kê">
+        <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
+    </a>
+    <button type="button" class="btn btn-outline-primary" data-report-print aria-label="In báo cáo điểm danh của sự kiện @Model.EventName">
+        <i class="bi bi-printer me-2"></i>In báo cáo
+    </button>
+</div>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/reports.js" asp-append-version="true"></script>
+}

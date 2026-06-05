@@ -1,0 +1,20 @@
+@{
+    var action = ViewData["FilterAction"]?.ToString() ?? "Index";
+    var controller = ViewData["FilterController"]?.ToString();
+    var method = ViewData["FilterMethod"]?.ToString() ?? "get";
+    var bodyPartial = ViewData["FilterBodyPartial"]?.ToString();
+    var bodyModel = ViewData["FilterBodyModel"];
+    var formClass = ViewData["FilterFormClass"]?.ToString() ?? "row g-3 align-items-end uy-filter-shell";
+    var formId = ViewData["FilterFormId"]?.ToString();
+}
+
+<form method="@method"
+      asp-action="@action"
+      asp-controller="@controller"
+      id="@formId"
+      class="@formClass">
+    @if (!string.IsNullOrWhiteSpace(bodyPartial))
+    {
+        <partial name="@bodyPartial" model="bodyModel" />
+    }
+</form>

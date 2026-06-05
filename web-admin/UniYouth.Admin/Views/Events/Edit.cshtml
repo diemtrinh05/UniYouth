@@ -1,0 +1,283 @@
+@model UniYouth.Admin.Models.ViewModels.Events.EditEventViewModel
+@{
+    ViewData["Title"] = "Chỉnh sửa sự kiện";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link rel="stylesheet" href="~/css/events-form.css" asp-append-version="true" />
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="bi bi-pencil me-2"></i>
+        Chỉnh sửa sự kiện
+    </h1>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.EventId" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-eye me-1"></i>Xem chi tiết
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <strong><i class="bi bi-sliders me-2"></i>Cập nhật sự kiện theo từng nhóm thông tin</strong>
+    </div>
+    <div class="card-body">
+        <div class="event-inline-note mb-3">
+            Event ID hiện tại: <strong>@Model.EventId</strong>. Khi chỉnh sửa, nên rà lại lần lượt <strong>thời gian</strong>, <strong>địa điểm</strong> và <strong>check-in policy</strong> để tránh ảnh hưởng flow check-in đang chạy.
+        </div>
+
+        <form asp-action="Edit" asp-route-id="@Model.EventId" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="EventId" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" role="alert">
+                <div class="fw-semibold mb-1">Không thể cập nhật sự kiện do dữ liệu chưa hợp lệ.</div>
+                <div class="small">Kiểm tra lại từng nhóm thông tin bên dưới, đặc biệt là thời gian, địa điểm và chính sách check-in.</div>
+            </div>
+
+            <section class="event-section-card">
+                <div class="event-section-header">
+                    <div class="event-section-kicker"><i class="bi bi-card-text"></i>Nhóm 1</div>
+                    <h2 class="h5 event-section-title">Thông tin cơ bản</h2>
+                    <p class="event-section-description">Điều chỉnh tên sự kiện, mô tả, loại sự kiện, đơn vị phụ trách và trạng thái hiện tại.</p>
+                </div>
+                <div class="event-section-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="EventName" class="form-label fw-bold"></label><span class="event-required-dot"> *</span>
+                            <input asp-for="EventName" class="form-control" placeholder="Ví dụ: Hội thảo chuyển đổi số tháng 4" />
+                            <div class="form-text">Tên sự kiện xuất hiện trực tiếp ở web admin và app, nên giữ rõ ràng và dễ nhận biết.</div>
+                            <span asp-validation-for="EventName" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label fw-bold"></label>
+                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Tóm tắt mục tiêu, nội dung chính và lưu ý khi tham gia"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="EventTypeId" class="form-label fw-bold"></label><span class="event-required-dot"> *</span>
+                            <select asp-for="EventTypeId" class="form-select">
+                                <option value="">-- Chọn loại sự kiện --</option>
+                                @foreach (var t in Model.EventTypes.OrderBy(x => x.TypeId))
+                                {
+                                    <option value="@t.TypeId">@t.TypeName</option>
+                                }
+                            </select>
+                            <span asp-validation-for="EventTypeId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="InstituteId" class="form-label fw-bold"></label>
+                            @{
+                                var instituteDisplay = Model.InstituteId switch
+                                {
+                                    1 => "Viện Công Nghệ Số",
+                                    int value => $"Institute #{value}",
+                                    _ => "—"
+                                };
+                            }
+                            <input class="form-control" value="@instituteDisplay" readonly aria-label="Đơn vị tổ chức" />
+                            <input type="hidden" asp-for="InstituteId" />
+                            <div class="form-text">Đơn vị tổ chức được giữ theo phạm vi quản trị của sự kiện.</div>
+                            <span asp-validation-for="InstituteId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Status" class="form-label fw-bold"></label><span class="event-required-dot"> *</span>
+                            <select asp-for="Status" class="form-select">
+                                <option value="0">Nháp (Draft)</option>
+                                <option value="1">Mở đăng ký (Open)</option>
+                                <option value="2">Đang diễn ra (Ongoing)</option>
+                            </select>
+                            <div class="form-text">
+                                Để hủy sự kiện, dùng chức năng <strong>Hủy sự kiện</strong>; không đổi trạng thái ở đây để tránh sai ngữ nghĩa nghiệp vụ.
+                            </div>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="event-section-card">
+                <div class="event-section-header">
+                    <div class="event-section-kicker"><i class="bi bi-clock-history"></i>Nhóm 2</div>
+                    <h2 class="h5 event-section-title">Thời gian & đăng ký</h2>
+                    <p class="event-section-description">Rà lại khung thời gian tổ chức, hạn đăng ký và số lượng tối đa trước khi mở sự kiện.</p>
+                </div>
+                <div class="event-section-body">
+                    <div class="event-inline-note mb-3">
+                        Khi chỉnh sửa event đang mở hoặc đang diễn ra, thay đổi thời gian có thể ảnh hưởng trực tiếp tới flow đăng ký và check-in trên app.
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="StartTime" class="form-label fw-bold"></label><span class="event-required-dot"> *</span>
+                            <input asp-for="StartTime" type="text" class="form-control js-ampm-datetime" asp-format="{0:yyyy-MM-ddTHH:mm}" autocomplete="off" />
+                            <span asp-validation-for="StartTime" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="EndTime" class="form-label fw-bold"></label><span class="event-required-dot"> *</span>
+                            <input asp-for="EndTime" type="text" class="form-control js-ampm-datetime" asp-format="{0:yyyy-MM-ddTHH:mm}" autocomplete="off" />
+                            <span asp-validation-for="EndTime" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="RegistrationDeadline" class="form-label fw-bold"></label>
+                            <input asp-for="RegistrationDeadline" type="text" class="form-control js-ampm-datetime" asp-format="{0:yyyy-MM-ddTHH:mm}" autocomplete="off" />
+                            <div class="form-text">Hạn đăng ký phải trước thời điểm bắt đầu sự kiện.</div>
+                            <span asp-validation-for="RegistrationDeadline" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="MaxParticipants" class="form-label fw-bold"></label>
+                            <input asp-for="MaxParticipants" type="number" class="form-control" />
+                            <div class="form-text">Để trống nếu không giới hạn số lượng người tham gia.</div>
+                            <span asp-validation-for="MaxParticipants" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="event-section-card">
+                <div class="event-section-header">
+                    <div class="event-section-kicker"><i class="bi bi-geo-alt"></i>Nhóm 3</div>
+                    <h2 class="h5 event-section-title">Địa điểm & GPS check-in</h2>
+                    <p class="event-section-description">Xác nhận lại vị trí trung tâm, tọa độ và bán kính hợp lệ khi điểm danh.</p>
+                </div>
+                <div class="event-section-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" for="locationPresetSelect">Vị trí định sẵn</label>
+                            <select id="locationPresetSelect" class="form-select">
+                                <option value="">-- Không dùng vị trí định sẵn --</option>
+                                @foreach (var p in (Model.LocationPresets ?? new()).OrderBy(x => x.Name))
+                                {
+                                    <option value="@p.LocationPresetId"
+                                            data-name="@p.Name"
+                                            data-address="@p.Address"
+                                            data-lat="@p.Latitude"
+                                            data-lng="@p.Longitude"
+                                            data-radius="@p.RadiusMeters">
+                                        @p.Name
+                                    </option>
+                                }
+                            </select>
+                            <div class="form-text">Preset giúp đồng bộ nhanh địa điểm, tọa độ và bán kính.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="AllowRadius" class="form-label fw-bold"></label><span class="event-required-dot"> *</span>
+                            <input asp-for="AllowRadius" type="number" class="form-control" />
+                            <div class="form-text">Nếu địa điểm trong nhà hoặc GPS dễ lệch, không nên đặt bán kính quá sát.</div>
+                            <span asp-validation-for="AllowRadius" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-outline-secondary"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#eventLocationFields"
+                                    aria-expanded="false"
+                                    aria-controls="eventLocationFields"
+                                    aria-label="Mở khu vực bản đồ và tọa độ khi chỉnh sửa sự kiện">
+                                <i class="bi bi-map me-1"></i>Mở khu vực bản đồ & tọa độ
+                            </button>
+                            <small class="text-muted ms-2">Dùng khi cần chỉnh lại vị trí GPS hoặc xác minh tọa độ thực tế.</small>
+                        </div>
+                    </div>
+
+                    <div id="eventLocationFields" class="collapse mt-3">
+                        <div class="event-inline-note mb-3">
+                            Nếu event đã từng dùng để check-in, hãy cân nhắc kỹ trước khi đổi tọa độ hoặc bán kính vì điều này sẽ ảnh hưởng trực tiếp đến tính hợp lệ của lượt điểm danh mới.
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="LocationName" class="form-label fw-bold"></label><span class="event-required-dot"> *</span>
+                            <input asp-for="LocationName" class="form-control" />
+                            <span asp-validation-for="LocationName" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <input asp-for="Latitude" type="hidden" />
+                            <input asp-for="Longitude" type="hidden" />
+
+                            <div class="col-md-8 mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label class="form-label fw-bold mb-0">Vị trí trên bản đồ</label>
+                                    <button id="btnUseMyLocation" type="button" class="btn btn-sm btn-outline-primary" aria-label="Dùng GPS hiện tại cho vị trí sự kiện">
+                                        <i class="bi bi-geo-alt"></i> Dùng GPS hiện tại
+                                    </button>
+                                </div>
+                                <div id="eventLocationMap" class="event-location-map"></div>
+                                <div class="event-location-meta small text-muted mt-2">
+                                    <span id="eventLocationCoords">Chưa chọn vị trí</span>
+                                    <span id="eventLocationStatus"></span>
+                                </div>
+                                <div>
+                                    <span asp-validation-for="Latitude" class="text-danger"></span>
+                                    <span asp-validation-for="Longitude" class="text-danger"></span>
+                                </div>
+                                <small class="text-muted">Click lên bản đồ hoặc nhập địa điểm để đồng bộ tên và tọa độ.</small>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <div class="event-inline-note h-100">
+                                    <div class="fw-semibold mb-2">Checklist GPS</div>
+                                    <ul class="event-help-list">
+                                        <li>Đảm bảo tọa độ đang trỏ vào đúng khu vực check-in thực tế.</li>
+                                        <li>Rà lại bán kính nếu sự kiện diễn ra trong nhà, tầng cao hoặc khuôn viên rộng.</li>
+                                        <li>Nếu đổi vị trí, nên kiểm tra lại flow check-in trên app trước khi mở sự kiện.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="event-section-card">
+                <div class="event-section-header">
+                    <div class="event-section-kicker"><i class="bi bi-shield-check"></i>Nhóm 4</div>
+                    <h2 class="h5 event-section-title">Check-in policy & rule liên quan</h2>
+                    <p class="event-section-description">Quyết định event có yêu cầu xác thực khuôn mặt hay không và các cảnh báo vận hành liên quan.</p>
+                </div>
+                <div class="event-section-body">
+                    <div class="mb-3 form-check form-switch">
+                        <input asp-for="EnableFaceVerification" class="form-check-input" />
+                        <label asp-for="EnableFaceVerification" class="form-check-label fw-bold"></label>
+                        <div class="form-text">
+                            Bật tùy chọn này nếu muốn <strong>bắt buộc xác thực khuôn mặt khi check-in</strong>.
+                            Khi bật, hệ thống chỉ ghi nhận check-in hợp lệ nếu người dùng vừa đạt GPS vừa vượt qua điều kiện face verification của event.
+                        </div>
+                    </div>
+
+                    <div class="event-inline-note">
+                        <div class="fw-semibold mb-2">Lưu ý trước khi bật Face Verification</div>
+                        <ul class="event-help-list">
+                            <li>Nên kiểm tra trước camera, ánh sáng và kết nối mạng ở địa điểm tổ chức.</li>
+                            <li>Nếu sự kiện đông người hoặc cần check-in rất nhanh, bật xác thực khuôn mặt có thể làm flow chậm hơn.</li>
+                            <li>Nếu thay đổi policy này sau khi đã truyền thông tới người tham gia, nên thông báo lại rõ ràng.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a asp-action="Index" class="btn btn-outline-secondary" aria-label="Hủy chỉnh sửa sự kiện và quay lại danh sách">
+                    <i class="bi bi-x-circle me-1"></i>Hủy bỏ
+                </a>
+                <button type="submit" class="btn btn-primary" aria-label="Cập nhật sự kiện">
+                    <i class="bi bi-check-circle me-1"></i>Cập nhật
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="_GoogleMapsScript" />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="~/js/event-location-picker.js" asp-append-version="true"></script>
+    <script src="~/js/events-form.js" asp-append-version="true"></script>
+}

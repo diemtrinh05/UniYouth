@@ -1,0 +1,204 @@
+﻿@*
+    Component Menu Điều hướng Sidebar
+    - Sidebar cố định ở bên trái
+    - Chứa các mục menu điều hướng
+    - Các mục menu sẽ được lọc dựa trên vai trò người dùng (CanBo/Admin) trong tương lai
+    - Highlight mục menu đang active sẽ được thực hiện qua JavaScript
+*@
+
+<nav id="sidebar" class="sidebar uy-sidebar" aria-label="Điều hướng chính">
+    <div class="sidebar-header">
+        <div class="sidebar-brand d-flex align-items-center justify-content-center py-3">
+            <span class="sidebar-brand-icon">
+                <i class="bi bi-calendar-event"></i>
+            </span>
+            <h4 class="mb-0 fw-bold">UniYouth</h4>
+        </div>
+        <hr class="sidebar-divider my-0">
+    </div>
+
+    <div class="sidebar-content">
+        <ul class="nav flex-column">
+            <!-- Trang chủ -->
+            <li class="nav-item">
+                <a class="nav-link active" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-house-door me-2"></i>
+                    <span>Trang chủ</span>
+                </a>
+            </li>
+
+            <!-- Phân cách -->
+            <li><hr class="sidebar-divider"></li>
+
+            <!-- Phần Quản lý sự kiện -->
+            <li class="nav-item">
+                <div class="sidebar-heading">Quản lý sự kiện</div>
+            </li>
+
+            <!-- Sự kiện -->
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Events" asp-action="Index">
+                    <i class="bi bi-calendar-check me-2"></i>
+                    <span>Sự kiện</span>
+                </a>
+            </li>
+
+            <!-- Loại sự kiện -->
+            <!-- Backend cho phép CanBo xem danh sách; CRUD được giới hạn ở màn hình/controller -->
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EventTypes" asp-action="Index">
+                    <i class="bi bi-tags me-2"></i>
+                    <span>Loại sự kiện</span>
+                </a>
+            </li>
+
+            <!-- Phân cách -->
+            <li><hr class="sidebar-divider"></li>
+
+            <!-- Phần Báo cáo -->
+            <li class="nav-item">
+                <div class="sidebar-heading">Báo cáo</div>
+            </li>
+
+            <!-- Báo cáo -->
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Reports" asp-action="Index">
+                    <i class="bi bi-graph-up me-2"></i>
+                    <span>Báo cáo thống kê</span>
+                </a>
+            </li>
+
+            <!-- @if (ViewBag.IsAdmin == true)
+            {
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Reports" asp-action="BiometricTelemetry">
+                        <i class="bi bi-activity me-2"></i>
+                        <span>Biometric Telemetry</span>
+                    </a>
+                </li>
+            } -->
+
+            <!-- Vị trí định sẵn (CanBo, Admin) -->
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="LocationPresets" asp-action="Index">
+                    <i class="bi bi-geo-alt me-2"></i>
+                    <span>Vị trí định sẵn</span>
+                </a>
+            </li>
+
+            <!-- Thông báo -->
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Notifications" asp-action="Index">
+                    <i class="bi bi-bell me-2"></i>
+                    <span>Thông báo</span>
+                </a>
+            </li>
+
+            <!-- Hỗ trợ sinh viên -->
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="SupportChat" asp-action="Index">
+                    <i class="bi bi-chat-dots me-2"></i>
+                    <span>Hỗ trợ sinh viên</span>
+                </a>
+            </li>
+
+            @* 
+                VÍ DỤ: Menu chỉ hiển thị cho Admin
+                Sử dụng ViewBag.IsAdmin được set bởi BaseController
+            *@
+            @if (ViewBag.IsAdmin == true)
+            {
+                <!-- Phân cách -->
+                <li><hr class="sidebar-divider"></li>
+
+                <!-- Phần Quản trị hệ thống (chỉ Admin) -->
+                <li class="nav-item">
+                    <div class="sidebar-heading">
+                        <i class="bi bi-shield-lock me-1 sidebar-heading-icon"></i>
+                        Quản trị hệ thống
+                    </div>
+                </li>
+
+                <!-- Quản lý User - Chỉ Admin -->
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Users" asp-action="Index">
+                        <i class="bi bi-people me-2"></i>
+                        <span>Quản lý người dùng</span>
+                    </a>
+                </li>
+            }
+
+            <!-- Phân cách -->
+            <li><hr class="sidebar-divider d-none d-md-block"></li>
+        </ul>
+    </div>
+
+    <!-- Nút Thu gọn Sidebar (cho mobile) -->
+    <div class="sidebar-footer text-center d-md-none">
+        <button type="button" class="btn btn-link" id="sidebarToggle" aria-label="Thu gọn menu">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+    </div>
+</nav>
+
+@*
+    Cải tiến Tương lai:
+    1. Render menu dựa trên vai trò:
+       - Sử dụng User.IsInRole("Admin") hoặc tương tự để hiển thị/ẩn các mục menu
+       - Ví dụ: @if(User.IsInRole("Admin")) { ... }
+    
+    2. Highlight menu đang active:
+       - Thêm JavaScript để highlight trang hiện tại
+       - So khớp URL hiện tại với href của mục menu
+    
+    3. Phần menu có thể thu gọn:
+       - Thêm Bootstrap collapse cho menu lồng nhau
+       - Hữu ích để nhóm các trang liên quan
+    
+    4. Render dựa trên quyền:
+       - Kiểm tra user claims/permissions để kiểm soát truy cập chi tiết
+       - Ví dụ: @if(User.HasClaim("Permission", "ViewReports")) { ... }
+*@
+@*
+    CÁCH THỨC HOẠT ĐỘNG:
+    
+    1. BaseController.OnActionExecuting() được gọi trước mỗi action
+    2. BaseController set ViewBag.IsAdmin và ViewBag.IsCanBo
+    3. Sidebar.cshtml đọc ViewBag để quyết định hiển thị menu nào
+    
+    VÍ DỤ ROLE-BASED RENDERING:
+    
+    // Chỉ hiển thị cho Admin
+    @if (ViewBag.IsAdmin == true)
+    {
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Admin" asp-action="Index">
+                Admin Only Menu
+            </a>
+        </li>
+    }
+    
+    // Chỉ hiển thị cho CanBo
+    @if (ViewBag.IsCanBo == true)
+    {
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="CanBo" asp-action="Index">
+                CanBo Only Menu
+            </a>
+        </li>
+    }
+    
+    // Hiển thị cho cả Admin và CanBo (không cần check)
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Shared" asp-action="Index">
+            All Roles Menu
+        </a>
+    </li>
+    
+    SECURITY NOTE:
+    - Việc ẩn menu item chỉ là UX improvement
+    - KHÔNG PHẢI LÀ SECURITY MEASURE
+    - Phải luôn validate quyền ở controller/action level
+    - AdminAuthorizeFilter đã handle việc này
+*@
+

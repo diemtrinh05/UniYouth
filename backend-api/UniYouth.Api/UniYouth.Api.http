@@ -1,0 +1,6 @@
+@UniYouth.Api_HostAddress = http://localhost:5160
+
+GET {{UniYouth.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,134 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Users.UpdateAdminUserProfileViewModel
+@{
+    ViewData["Title"] = "Cập nhật người dùng";
+    ViewData["PageIcon"] = "bi bi-pencil-square";
+    ViewData["PageSubtitle"] = "Cập nhật thông tin hồ sơ, đơn vị và chức vụ của người dùng.";
+}
+
+<div class="d-flex justify-content-between align-items-start gap-3 mb-4 flex-wrap">
+    <partial name="UI/_PageHeader" />
+    <div class="d-flex gap-2 flex-wrap">
+        @if (!string.IsNullOrWhiteSpace(Model.ReturnUrl))
+        {
+            <a class="btn btn-outline-secondary" href="@Model.ReturnUrl" aria-label="Quay lại trang trước">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại
+            </a>
+        }
+        else
+        {
+            <a class="btn btn-outline-secondary" asp-action="Detail" asp-route-id="@Model.UserId" aria-label="Quay lại chi tiết người dùng @Model.FullName">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại
+            </a>
+        }
+    </div>
+</div>
+
+<div class="card uy-section-card">
+    <div class="card-header uy-section-card-header">
+        <strong class="uy-section-card-title">ID: @Model.UserId</strong>
+        @if (!string.IsNullOrWhiteSpace(Model.Code))
+        {
+            <span class="text-muted ms-2">(@Model.Code)</span>
+        }
+    </div>
+    <div class="card-body">
+        <form method="post" asp-action="EditProfile">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="UserId" />
+            <input type="hidden" asp-for="Code" />
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="FullName" class="form-label fw-bold"></label>
+                    <input asp-for="FullName" class="form-control" maxlength="100" />
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label fw-bold"></label>
+                    <input asp-for="Email" class="form-control" maxlength="100" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Phone" class="form-label fw-bold"></label>
+                    <input asp-for="Phone" class="form-control" maxlength="20" />
+                    <span asp-validation-for="Phone" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Gender" class="form-label fw-bold"></label>
+                    <select asp-for="Gender" class="form-select">
+                        <option value="">Không xác định</option>
+                        <option value="true">Nam</option>
+                        <option value="false">Nữ</option>
+                    </select>
+                    <span asp-validation-for="Gender" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="DateOfBirth" class="form-label fw-bold"></label>
+                    <input asp-for="DateOfBirth" type="date" class="form-control" />
+                    <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="JoinDate" class="form-label fw-bold"></label>
+                    <input asp-for="JoinDate" type="date" class="form-control" />
+                    <span asp-validation-for="JoinDate" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Address" class="form-label fw-bold"></label>
+                    <input asp-for="Address" class="form-control" maxlength="255" />
+                    <span asp-validation-for="Address" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="PositionId" class="form-label fw-bold"></label>
+                    <select asp-for="PositionId" class="form-select" id="editUserPositionId">
+                        <option value="" selected="@(Model.PositionId == null ? "selected" : null)">-- Chọn chức vụ --</option>
+                        @foreach (var position in Model.PositionOptions)
+                        {
+                            <option value="@position.PositionId"
+                                    data-unit-name="@position.UnitName"
+                                    selected="@(Model.PositionId == position.PositionId ? "selected" : null)">
+                                @position.PositionName
+                            </option>
+                        }
+                    </select>
+                    <span asp-validation-for="PositionId" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="UnitName" class="form-label fw-bold"></label>
+                    <input asp-for="UnitName" class="form-control" id="editUserUnitName" readonly />
+                    <div class="form-text">Đơn vị được tự động xác định theo chức vụ đã chọn.</div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end gap-2">
+                @if (!string.IsNullOrWhiteSpace(Model.ReturnUrl))
+                {
+                    <a class="btn btn-outline-secondary" href="@Model.ReturnUrl" aria-label="Hủy chỉnh sửa và quay lại trang trước">
+                        <i class="bi bi-x-circle me-1"></i>Hủy
+                    </a>
+                }
+                else
+                {
+                    <a class="btn btn-outline-secondary" asp-action="Detail" asp-route-id="@Model.UserId" aria-label="Hủy chỉnh sửa và quay lại chi tiết người dùng @Model.FullName">
+                        <i class="bi bi-x-circle me-1"></i>Hủy
+                    </a>
+                }
+                <button type="submit" class="btn btn-primary" aria-label="Lưu hồ sơ người dùng @Model.FullName">
+                    <i class="bi bi-save me-1"></i>Lưu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/users-edit-profile.js" asp-append-version="true"></script>
+}
+

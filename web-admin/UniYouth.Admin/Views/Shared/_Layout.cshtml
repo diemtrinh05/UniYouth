@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - UniYouth Admin</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+          crossorigin="anonymous">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Design tokens and custom CSS -->
+    <link rel="stylesheet" href="~/css/tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
+
+</head>
+<body>
+    <a class="uy-skip-link" href="#mainContent">Bỏ qua đến nội dung chính</a>
+
+    <!-- Container chính -->
+    <div class="wrapper">
+        <!-- Menu điều hướng Sidebar -->
+        <!-- Sidebar chứa menu điều hướng chính -->
+        <!-- Sidebar sẽ được cố định ở bên trái màn hình -->
+        <partial name="_Sidebar" />
+        
+        <!-- Vùng nội dung chính -->
+        <div class="main-content">
+            <!-- Thanh điều hướng phía trên -->
+            <!-- Chứa thông tin user, thông báo và nút đăng xuất -->
+            <partial name="_Topbar" />
+            
+            <!-- Container nội dung trang -->
+            <!-- Đây là nơi nội dung của từng trang sẽ được hiển thị -->
+            <main id="mainContent" class="content-wrapper" role="main" tabindex="-1">
+                <div class="container-fluid px-4 py-4">
+                    <!-- RenderBody() sẽ chèn nội dung từ các view riêng lẻ vào đây -->
+                    <!-- Mỗi view (Trang chủ, Events, v.v.) sẽ được render trong phần này -->
+                    @RenderBody()
+                </div>
+            </main>
+            
+            <!-- Footer -->
+            <footer class="footer mt-auto py-3 bg-light border-top">
+                <div class="container-fluid px-4">
+                    <div class="text-center text-muted">
+                        <small>&copy; 2026 UniYouth Admin - Hệ thống quản lý sự kiện</small>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Global Toast Container (dùng chung toàn site cho notification/toast UI) -->
+    <div id="globalToastContainer"
+         class="toast-container position-fixed top-0 end-0 p-3 global-toast-container"
+         aria-live="polite"
+         aria-atomic="true"></div>
+    
+    <!-- jQuery (required by jquery.validate / unobtrusive scripts in many views) -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <!-- Bootstrap 5 JS Bundle (bao gồm Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" 
+            crossorigin="anonymous"></script>
+
+    <!-- SignalR client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"
+            crossorigin="anonymous"></script>
+
+    <!-- Notification scripts: StateStore -> API client -> SignalR client -->
+    <script src="~/js/notification-state-store.js" asp-append-version="true"></script>
+    <script src="~/js/notification-api-client.js" asp-append-version="true"></script>
+    <script src="~/js/notification-signalr-client.js" asp-append-version="true"></script>
+
+    <!-- JavaScript tùy chỉnh (UI binder) -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/progress-bars.js" asp-append-version="true"></script>
+    
+    <!-- RenderSection cho các script riêng của từng trang -->
+    <!-- Các trang riêng lẻ có thể thêm JavaScript của riêng chúng bằng cách sử dụng @@section Scripts {} -->
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+

@@ -1,0 +1,125 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Home.HomeOverviewViewModel
+
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card uy-section-card">
+            <div class="card-header uy-section-card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="uy-section-card-title mb-0">
+                        <i class="bi bi-calendar-check me-2"></i>Sự kiện gần đây
+                    </h6>
+                    <a asp-controller="Events" asp-action="Index" class="btn btn-sm btn-outline-primary" aria-label="Xem tất cả sự kiện">
+                        Xem tất cả <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.RecentEvents != null && Model.RecentEvents.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover table-modern mb-0">
+                            <caption class="visually-hidden">Danh sách sự kiện gần đây</caption>
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="border-0 home-recent-id-col">#</th>
+                                    <th class="border-0">Sự kiện</th>
+                                    <th class="border-0">Thời gian</th>
+                                    <th class="border-0">Trạng thái</th>
+                                    <th class="border-0">Tham gia</th>
+                                    <th class="border-0 text-end">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var e in Model.RecentEvents)
+                                {
+                                    <tr class="event-row">
+                                        <td class="text-center fw-bold text-muted">@e.EventId</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrWhiteSpace(e.ThumbnailUrl))
+                                                {
+                                                    <img src="@Html.ResolveApiAssetUrl(e.ThumbnailUrl)"
+                                                         alt="@e.EventName"
+                                                         class="rounded me-2 home-event-thumb">
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center home-event-thumb-placeholder">
+                                                        <i class="bi bi-image text-muted"></i>
+                                                    </div>
+                                                }
+                                                <div>
+                                                    <div class="fw-semibold">@e.EventName</div>
+                                                    <small class="text-muted">@e.LocationName</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <i class="bi bi-calendar3 text-primary me-1"></i>
+                                                <small>@e.StartTime.ToString("dd/MM/yyyy")</small>
+                                            </div>
+                                            <div>
+                                                <i class="bi bi-clock text-muted me-1"></i>
+                                                <small class="text-muted">@e.StartTime.ToString("HH:mm") - @e.EndTime.ToString("HH:mm")</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge @e.BadgeClass">@((e.StatusName ?? e.Status))</span>
+                                        </td>
+                                        <td>
+                                            <div class="progress home-participation-progress">
+                                                <div class="progress-bar bg-success"
+                                                     role="progressbar"
+                                                     data-progress-width="@e.ParticipationPercent"
+                                                     aria-label="Tỷ lệ người tham gia @e.EventName"
+                                                     aria-valuenow="@e.ParticipationPercent"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100"
+                                                     data-bs-toggle="tooltip"
+                                                     title="@e.ParticipantsDisplay người"></div>
+                                            </div>
+                                            <small class="text-muted">@e.ParticipantsDisplay</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm" role="group" aria-label="Thao tác sự kiện @e.EventName">
+                                                <a asp-controller="Events" asp-action="Details" asp-route-id="@e.EventId"
+                                                   class="btn btn-outline-info"
+                                                   data-bs-toggle="tooltip"
+                                                   title="Chi tiết"
+                                                   aria-label="Xem chi tiết sự kiện @e.EventName">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <button type="button"
+                                                        class="btn btn-outline-primary"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="Mã QR"
+                                                        data-event-id="@e.EventId"
+                                                        data-event-name="@e.EventName"
+                                                        data-home-qr-preview-trigger="true"
+                                                        aria-label="Xem mã QR của sự kiện @e.EventName">
+                                                    <i class="bi bi-qr-code"></i>
+                                                </button>
+                                                <a asp-controller="Events" asp-action="Edit" asp-route-id="@e.EventId"
+                                                   class="btn btn-outline-warning"
+                                                   data-bs-toggle="tooltip"
+                                                   title="Chỉnh sửa"
+                                                   aria-label="Chỉnh sửa sự kiện @e.EventName">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <partial name="UI/_EmptyState" model='new { Icon = "bi bi-calendar-x", Title = "Chưa có sự kiện", Description = "Các sự kiện gần đây sẽ xuất hiện tại đây khi có dữ liệu." }' />
+                }
+            </div>
+        </div>
+    </div>
+</div>

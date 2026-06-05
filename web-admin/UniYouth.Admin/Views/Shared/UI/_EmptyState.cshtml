@@ -1,0 +1,16 @@
+@{
+    var icon = ViewData["EmptyIcon"]?.ToString() ?? "bi bi-inbox";
+    var title = ViewData["EmptyTitle"]?.ToString() ?? "Chưa có dữ liệu";
+    var description = ViewData["EmptyDescription"]?.ToString();
+}
+
+<div class="uy-empty-state">
+    <div class="uy-empty-state-icon">
+        <i class="@icon" aria-hidden="true"></i>
+    </div>
+    <h2 class="uy-empty-state-title">@title</h2>
+    @if (!string.IsNullOrWhiteSpace(description))
+    {
+        <p class="uy-empty-state-description">@description</p>
+    }
+</div>

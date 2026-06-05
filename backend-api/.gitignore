@@ -1,0 +1,59 @@
+# =====================
+# Visual Studio
+# =====================
+.vs/
+
+# =====================
+# Build results
+# =====================
+bin/
+obj/
+artifacts/
+
+# =====================
+# User-specific files
+# =====================
+*.user
+*.suo
+*.cache
+*.log
+
+# =====================
+# Rider / VS Code
+# =====================
+.idea/
+.vscode/
+
+# =====================
+# OS files
+# =====================
+.DS_Store
+Thumbs.db
+
+# =====================
+# Temp / generated runtime files
+# =====================
+.tmp*
+scripts/.runtime/
+*.docx
+swagger_v4.json
+
+# =====================
+# Uploads / local generated assets
+# =====================
+UniYouth.Api/wwwroot/uploads/
+secrets/
+
+# =====================
+# Python local environment / caches
+# =====================
+services/face-service/.python/
+services/face-service/.venv/
+services/face-service/__pycache__/
+services/face-service/.pytest_cache/
+services/face-service/datasets/
+
+# =====================
+# Markdown notes/docs (do not commit)
+# =====================
+*.md

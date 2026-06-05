@@ -1,0 +1,79 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Attendance.EventAttendanceListViewModel
+
+<div class="card mb-4 uy-section-card">
+    <div class="card-header bg-white uy-section-card-header">
+        <h5 class="mb-0 uy-section-card-title">
+            <i class="bi bi-funnel me-2"></i>Bộ lọc
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="uy-filter-shell">
+            <input type="hidden" name="eventId" value="@Model.EventId" />
+            <input type="hidden" name="pageNumber" value="1" />
+            <input type="hidden" name="pageSize" value="@Model.PageSize" />
+
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <label class="form-label" for="q">Tìm kiếm</label>
+                    <input class="form-control"
+                           id="q"
+                           name="q"
+                           value="@Model.Q"
+                           placeholder="Mã, họ tên, email..." />
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label" for="isValid">Trạng thái</label>
+                    <select class="form-select" id="isValid" name="isValid">
+                        <option value="" selected='@(Model.IsValid == null ? "selected" : null)'>Tất cả</option>
+                        <option value="true" selected='@(Model.IsValid == true ? "selected" : null)'>Hợp lệ</option>
+                        <option value="false" selected='@(Model.IsValid == false ? "selected" : null)'>Không hợp lệ</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label" for="riskLevel">Risk level</label>
+                    <select class="form-select" id="riskLevel" name="riskLevel">
+                        <option value="" selected='@(string.IsNullOrWhiteSpace(Model.RiskLevel) ? "selected" : null)'>Tất cả</option>
+                        <option value="Low" selected='@(Model.RiskLevel == "Low" ? "selected" : null)'>Low</option>
+                        <option value="Medium" selected='@(Model.RiskLevel == "Medium" ? "selected" : null)'>Medium</option>
+                        <option value="High" selected='@(Model.RiskLevel == "High" ? "selected" : null)'>High</option>
+                        <option value="Critical" selected='@(Model.RiskLevel == "Critical" ? "selected" : null)'>Critical</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label" for="from">Từ</label>
+                    <input type="datetime-local"
+                           class="form-control"
+                           id="from"
+                           name="from"
+                           value='@(Model.From?.ToString("yyyy-MM-ddTHH:mm"))' />
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label" for="to">Đến</label>
+                    <input type="datetime-local"
+                           class="form-control"
+                           id="to"
+                           name="to"
+                           value='@(Model.To?.ToString("yyyy-MM-ddTHH:mm"))' />
+                </div>
+
+                <div class="col-lg-12 d-flex align-items-end">
+                    <div class="btn-group" role="group" aria-label="Thao tác lọc điểm danh">
+                        <button type="submit" class="btn btn-primary" aria-label="Lọc danh sách điểm danh">
+                            <i class="bi bi-search me-1"></i>Lọc
+                        </button>
+                        <a class="btn btn-outline-secondary"
+                           asp-action="Index"
+                           asp-route-eventId="@Model.EventId"
+                           aria-label="Xóa bộ lọc danh sách điểm danh">
+                            <i class="bi bi-x-circle me-1"></i>Xóa
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

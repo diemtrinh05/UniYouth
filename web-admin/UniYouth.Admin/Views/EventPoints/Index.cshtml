@@ -1,0 +1,223 @@
+﻿@model UniYouth.Admin.Models.ViewModels.EventPoints.EventPointListViewModel
+
+@{
+    ViewData["Title"] = "Cấu hình Điểm";
+    ViewData["PageIcon"] = "bi bi-trophy";
+    ViewData["PageSubtitle"] = Model.EventName;
+}
+
+<partial name="_Alerts" />
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+        <div>
+            <partial name="UI/_PageHeader" />
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Events" asp-action="Index">Sự kiện</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Cấu hình Điểm</li>
+                </ol>
+            </nav>
+        </div>
+        <a asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại
+        </a>
+    </div>
+
+    @* Form thêm quy tắc *@
+    @if (Model.AvailableRolesToAdd.Any())
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card uy-section-card">
+                    <div class="card-header bg-light uy-section-card-header">
+                        <h5 class="mb-0 uy-section-card-title"><i class="bi bi-plus-circle me-2"></i>Thêm Quy tắc Điểm</h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Create" asp-route-eventId="@Model.EventId" method="post">
+                            @Html.AntiForgeryToken()
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label" for="createRoleType">Vai trò <span class="text-danger">*</span></label>
+                                    <select name="RoleType" id="createRoleType" class="form-select" required>
+                                        <option value="">-- Chọn vai trò --</option>
+                                        @foreach (var role in Model.AvailableRolesToAdd)
+                                        {
+                                            var displayName = role switch
+                                            {
+                                                "Organizer" => "Ban tổ chức",
+                                                "Participant" => "Người tham gia",
+                                                "Volunteer" => "Tình nguyện viên",
+                                                _ => role
+                                            };
+                                            <option value="@role">@displayName</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label" for="createPoints">Số Điểm <span class="text-danger">*</span></label>
+                                    <input type="number" name="Points" id="createPoints" class="form-control" min="1" required>
+                                </div>
+                                <div class="col-md-5 mb-3">
+                                    <label class="form-label" for="createDescription">Mô tả (Tùy chọn)</label>
+                                    <input type="text" name="Description" id="createDescription" class="form-control" maxlength="255">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" aria-label="Thêm quy tắc điểm mới cho sự kiện">
+                                <i class="bi bi-plus-circle me-1"></i>Thêm Quy tắc
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @* Bảng quy tắc hiện có *@
+    <div class="row">
+        <div class="col-12">
+            <div class="card uy-section-card">
+                <div class="card-header bg-light uy-section-card-header">
+                    <h5 class="mb-0 uy-section-card-title"><i class="bi bi-list me-2"></i>Quy tắc Điểm (@Model.TotalRules)</h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.HasRules)
+                    {
+                        var emptyStateViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+                        {
+                            ["EmptyIcon"] = "bi bi-trophy",
+                            ["EmptyTitle"] = "Chưa có quy tắc điểm",
+                            ["EmptyDescription"] = "Thêm quy tắc điểm để user nhận điểm khi tham gia sự kiện."
+                        };
+                        <partial name="UI/_EmptyState" view-data="emptyStateViewData" />
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <caption class="visually-hidden">Danh sách quy tắc điểm theo vai trò</caption>
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Vai trò</th>
+                                        <th>Số Điểm</th>
+                                        <th>Mô tả</th>
+                                        <th>Ngày tạo</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var point in Model.EventPoints.OrderByDescending(p => p.Points))
+                                    {
+                                        <tr id="row-@point.EventPointID">
+                                            <td>
+                                                <span class="badge @point.RoleBadgeClass">
+                                                    <i class="bi @point.RoleIcon me-1"></i>@point.RoleDisplayText
+                                                </span>
+                                            </td>
+                                            <td><strong class="text-primary">@point.Points điểm</strong></td>
+                                            <td>
+                                                <small class="text-muted">@(point.Description ?? "-")</small>
+                                            </td>
+                                            <td>
+                                                <small>@point.CreatedDate?.ToString("dd/MM/yyyy HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary"
+                                                        type="button"
+                                                        data-event-point-edit
+                                                        data-point-id="@point.EventPointID"
+                                                        data-role-type="@point.RoleType"
+                                                        data-points="@point.Points"
+                                                        data-description="@point.Description"
+                                                        aria-label="Sửa quy tắc điểm cho @point.RoleDisplayText">
+                                                    <i class="bi bi-pencil"></i> Sửa
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        type="button"
+                                                        data-event-point-delete
+                                                        data-point-id="@point.EventPointID"
+                                                        data-role-name="@point.RoleDisplayText"
+                                                        aria-label="Xóa quy tắc điểm cho @point.RoleDisplayText">
+                                                    <i class="bi bi-trash"></i> Xóa
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modal Sửa *@
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Sửa Quy tắc Điểm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng modal sửa quy tắc điểm"></button>
+            </div>
+            <form asp-action="Update" asp-route-eventId="@Model.EventId" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="EventPointID" id="editPointId">
+                <input type="hidden" name="EventID" value="@Model.EventId">
+                <input type="hidden" name="RoleType" id="editRoleType">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="editRoleDisplay">Vai trò</label>
+                        <input type="text" class="form-control" id="editRoleDisplay" disabled>
+                        <small class="text-muted">Không thể thay đổi vai trò. Nếu cần đổi, xóa rule cũ và tạo mới.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="editPoints">Số Điểm <span class="text-danger">*</span></label>
+                        <input type="number" name="Points" id="editPoints" class="form-control" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="editDescription">Mô tả</label>
+                        <input type="text" name="Description" id="editDescription" class="form-control" maxlength="255">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Hủy sửa quy tắc điểm">Hủy</button>
+                    <button type="submit" class="btn btn-primary" aria-label="Lưu quy tắc điểm">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* Modal Xóa *@
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">Xác nhận Xóa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng modal xóa quy tắc điểm"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc muốn xóa quy tắc điểm cho <strong id="deleteRoleName"></strong>?</p>
+                <p class="text-warning mb-0">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    Lưu ý: Điểm đã cấp trước đó KHÔNG bị ảnh hưởng.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Hủy xóa quy tắc điểm">Hủy</button>
+                <form asp-action="Delete" asp-route-eventId="@Model.EventId" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="eventPointId" id="deletePointId">
+                    <button type="submit" class="btn btn-danger" aria-label="Xác nhận xóa quy tắc điểm">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/event-points-index.js" asp-append-version="true"></script>
+}

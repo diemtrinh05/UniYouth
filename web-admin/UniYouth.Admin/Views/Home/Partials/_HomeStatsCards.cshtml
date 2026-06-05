@@ -1,0 +1,67 @@
+@model UniYouth.Admin.Models.ViewModels.Home.HomeOverviewViewModel
+
+<div class="row g-3 mb-4 home-metric-grid">
+    <div class="col-xl-3 col-md-6">
+        @{
+            var totalEventsMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["MetricLabel"] = "Tổng số sự kiện",
+                ["MetricValueHtml"] = $"<span class=\"counter\" data-target=\"{Model.TotalEvents}\">0</span>",
+                ["MetricHelper"] = "Tăng 12% so với tháng trước",
+                ["MetricIcon"] = "bi bi-calendar-event",
+                ["MetricTone"] = "primary"
+            };
+        }
+        <div class="home-metric-card animate-fade-in" data-delay="0">
+            <partial name="UI/_MetricCard" view-data="totalEventsMetricViewData" />
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        @{
+            var ongoingMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["MetricLabel"] = "Đang diễn ra",
+                ["MetricValueHtml"] = $"<span class=\"counter\" data-target=\"{Model.OngoingEvents}\">0</span>",
+                ["MetricHelper"] = $"{Model.TodayOngoingEvents} sự kiện diễn ra hôm nay",
+                ["MetricIcon"] = "bi bi-play-circle",
+                ["MetricTone"] = "success"
+            };
+        }
+        <div class="home-metric-card animate-fade-in" data-delay="100">
+            <partial name="UI/_MetricCard" view-data="ongoingMetricViewData" />
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        @{
+            var attendanceMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["MetricLabel"] = "Lượt điểm danh",
+                ["MetricValueHtml"] = $"<span class=\"counter\" data-target=\"{Model.TotalValidAttendances}\">0</span>",
+                ["MetricHelper"] = $"{Model.AttendanceRatePercent}% tỷ lệ tham gia",
+                ["MetricIcon"] = "bi bi-person-check",
+                ["MetricTone"] = "info"
+            };
+        }
+        <div class="home-metric-card animate-fade-in" data-delay="200">
+            <partial name="UI/_MetricCard" view-data="attendanceMetricViewData" />
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        @{
+            var draftMetricViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+            {
+                ["MetricLabel"] = "Chờ xử lý",
+                ["MetricValueHtml"] = $"<span class=\"counter\" data-target=\"{Model.DraftEvents}\">0</span>",
+                ["MetricHelper"] = "Cần xem xét",
+                ["MetricIcon"] = "bi bi-clock-history",
+                ["MetricTone"] = "warning"
+            };
+        }
+        <div class="home-metric-card animate-fade-in" data-delay="300">
+            <partial name="UI/_MetricCard" view-data="draftMetricViewData" />
+        </div>
+    </div>
+</div>

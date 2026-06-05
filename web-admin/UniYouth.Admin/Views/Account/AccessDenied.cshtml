@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Truy cập bị từ chối";
+    ViewData["AuthStatusBodyClass"] = "auth-status-page-forbidden";
+    Layout = "_AuthStatusLayout";
+}
+
+<main class="auth-status-container">
+    <section class="auth-status-card" aria-labelledby="accessDeniedTitle">
+        <div class="auth-status-icon" aria-hidden="true">
+            <i class="bi bi-shield-exclamation"></i>
+        </div>
+
+        <div class="auth-status-code">403</div>
+        <h1 class="auth-status-title" id="accessDeniedTitle">Truy cập bị từ chối</h1>
+
+        <p class="auth-status-message">
+            Bạn không có quyền truy cập vào trang này.<br>
+            Chỉ Quản trị viên (Admin) và Cán bộ (CanBo) mới có thể truy cập.
+        </p>
+
+        <div class="auth-status-actions">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary auth-status-button" aria-label="Về trang chủ">
+                <i class="bi bi-house-door me-2"></i>Về trang chủ
+            </a>
+            <form asp-controller="Account" asp-action="Logout" method="post" class="auth-status-action-form">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn auth-status-button auth-status-button-outline" aria-label="Đăng xuất khỏi hệ thống">
+                    <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                </button>
+            </form>
+        </div>
+    </section>
+</main>

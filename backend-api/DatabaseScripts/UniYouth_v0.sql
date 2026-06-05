@@ -1,0 +1,11 @@
+-- Legacy schema draft notice
+-- --------------------------
+-- File `UniYouth_v0.sql` cũ đã bị lỗi mã hóa ký tự và không còn đủ tin cậy để dùng làm
+-- script tạo DB hoặc nguồn tham chiếu kỹ thuật.
+--
+-- Tài liệu/script thay thế nên dùng:
+-- 1. `DatabaseScripts/UniYouth_v3.sql`
+-- 2. các migration/script bổ sung mới hơn trong cùng thư mục
+--
+-- Nếu cần phục dựng lại bản `v0`, nên tái tạo từ source sạch khác thay vì sửa tiếp bản cũ
+-- đã mất ký tự.

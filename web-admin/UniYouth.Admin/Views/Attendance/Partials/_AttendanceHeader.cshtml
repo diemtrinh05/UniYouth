@@ -1,0 +1,44 @@
+﻿@model UniYouth.Admin.Models.ViewModels.Attendance.EventAttendanceListViewModel
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-start gap-3 attendance-header">
+            <div>
+                @{
+                    var pageHeaderViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData)
+                    {
+                        ["Title"] = $"Danh sách Điểm danh - {Model.EventName}",
+                        ["PageIcon"] = "bi bi-person-check",
+                        ["PageSubtitle"] = "Theo dõi trạng thái check-in, tín hiệu rủi ro và dữ liệu xác minh của sự kiện."
+                    };
+                }
+                <partial name="UI/_PageHeader" view-data="pageHeaderViewData" />
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door"></i> Trang chủ
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a asp-controller="Events" asp-action="Index">Sự kiện</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Danh sách Điểm danh
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="attendance-header-actions">
+                <a asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Quay lại Sự kiện
+                </a>
+                <a asp-controller="Registration" asp-action="Index" asp-route-eventId="@Model.EventId"
+                   class="btn btn-outline-primary">
+                    <i class="bi bi-people me-1"></i>Xem Đăng ký
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

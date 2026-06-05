@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter Android (USB, API localhost)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "debug",
+      "preLaunchTask": "adb reverse 7016",
+      "args": ["--dart-define=API_BASE_URL=http://192.168.1.16:5160"]
+    },
+    {
+      "name": "Flutter Android (WiFi, API LAN)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "debug",
+      "args": ["--dart-define=API_BASE_URL=http://192.168.1.13:5160"]
+    },
+    {
+      "name": "Flutter Web (API localhost)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "debug",
+      "args": ["--dart-define=API_BASE_URL=https://localhost:7016"]
+    }
+  ]
+}
