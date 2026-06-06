@@ -2,27 +2,27 @@
 
 ## Overview
 
-UniYouth là hệ thống quản lý hoạt động đoàn hội và điểm rèn luyện. Repo này là monorepo public, gồm backend API, web admin và mobile app. Hệ thống hỗ trợ quản lý sự kiện, đăng ký tham gia, điểm hoạt động, điểm danh bằng QR/GPS/khuôn mặt, thông báo, hỗ trợ người dùng và báo cáo quản trị.
+UniYouth là hệ thống quản lý hoạt động đoàn hội và điểm rèn luyện. Repo này là monorepo public, gồm 3 phần chính: Backend API, Web Admin và Mobile App. Hệ thống hỗ trợ quản lý sự kiện, đăng ký tham gia, điểm hoạt động, điểm danh bằng QR/GPS/khuôn mặt, thông báo, hỗ trợ người dùng và báo cáo quản trị.
 
 Repo public này không chứa secret, file cấu hình runtime cá nhân, build output, cache, virtualenv, APK hoặc các file nằm trong `.gitignore`.
 
 ## Features
 
 - Đăng nhập bằng tài khoản nội bộ, JWT access token và refresh token.
-- Quên mật khẩu, OTP xác thực và đặt lại mật khẩu.
+- Quên mật khẩu, xác thực OTP và đặt lại mật khẩu.
 - Quản lý người dùng, hồ sơ cá nhân, avatar, vai trò và trạng thái tài khoản.
 - Quản lý đơn vị, viện, chức vụ và phân quyền theo vai trò.
 - Quản lý loại sự kiện, sự kiện, ảnh sự kiện, trạng thái sự kiện và địa điểm.
 - Đăng ký và hủy đăng ký tham gia sự kiện.
 - Sinh, xem chi tiết và vô hiệu hóa QR code điểm danh.
-- Điểm danh sự kiện bằng QR code, GPS, device id, face verification và passive liveness.
+- Điểm danh sự kiện bằng QR code, GPS, device id, xác thực khuôn mặt và passive liveness.
 - Quản lý điểm hoạt động và lịch sử điểm của người dùng.
 - Báo cáo điểm danh, thống kê sự kiện, telemetry sinh trắc học và observability thông báo.
-- Notification inbox, unread count, mark as read, mark all as read.
+- Hộp thư thông báo, số lượng chưa đọc, đánh dấu đã đọc và đánh dấu tất cả đã đọc.
 - Push notification qua FCM/APNS theo cấu hình runtime.
 - Realtime notification và support chat qua SignalR.
-- Web Admin cho cán bộ/admin: dashboard, sự kiện, QR, điểm danh, người dùng, báo cáo, notification, support chat.
-- Mobile app cho người dùng: đăng nhập, sự kiện, đăng ký, điểm danh QR, lịch sử điểm danh, điểm, thông báo, hồ sơ, hỗ trợ.
+- Web Admin cho cán bộ/admin: dashboard, sự kiện, QR, điểm danh, người dùng, báo cáo, notification và support chat.
+- Mobile app cho người dùng: đăng nhập, sự kiện, đăng ký, điểm danh QR, lịch sử điểm danh, điểm, thông báo, hồ sơ và hỗ trợ.
 - Python face-service nội bộ dùng DeepFace/ArcFace để enroll, verify và liveness check.
 
 ## Tech Stack
@@ -42,14 +42,14 @@ Repo public này không chứa secret, file cấu hình runtime cá nhân, build
 - Google Gmail API client
 - SMTP email
 - FCM/APNS push notification integration
-- xUnit, Moq, EF Core InMemory for tests
+- xUnit, Moq, EF Core InMemory cho test
 
 ### Web Admin
 
 - C# / .NET 8
 - ASP.NET Core MVC / Razor Views
 - HttpClient-based API services
-- JWT validation from HttpOnly cookie
+- JWT validation từ HttpOnly cookie
 - QRCoder
 - HTML/CSS/JavaScript
 
@@ -78,7 +78,7 @@ Repo public này không chứa secret, file cấu hình runtime cá nhân, build
 - FastAPI
 - Uvicorn
 - DeepFace
-- TensorFlow/Keras via `tf-keras`
+- TensorFlow/Keras qua `tf-keras`
 - NumPy
 - Pillow
 
@@ -104,14 +104,14 @@ ASP.NET Core Web Admin
 ASP.NET Core Backend API
 ```
 
-Kiến trúc backend là monolithic layered architecture:
+Backend API là monolithic layered architecture:
 
 - `Controllers`: nhận HTTP request và trả API response.
-- `Application/Services`: business logic.
+- `Application/Services`: xử lý business logic.
 - `Contracts/DTOs`: request/response DTO.
 - `Domain/Entities`: entity ánh xạ database.
 - `Infrastructure/Data`: EF Core DbContext và mapping.
-- `Shared`: constants, enums, exception handling, helpers, idempotency, push notification, face verification options.
+- `Shared`: constants, enums, exception handling, helpers, idempotency, push notification và face verification options.
 
 Mobile app đi theo hướng Clean Architecture/feature-based:
 
@@ -195,12 +195,14 @@ UniYouth/
 - Android Studio / Android SDK nếu chạy Android
 - Xcode nếu chạy iOS/macOS
 - Python 3.11+
-- PowerShell nếu dùng các script trong `backend-api/scripts`
+- PowerShell nếu dùng script trong `backend-api/scripts`
 - Firebase project/service account nếu bật FCM push notification
 - SMTP hoặc Gmail API credentials nếu bật email
 - Cloudflare Tunnel nếu dùng public tunnel script
 
 ## Installation
+
+Clone project:
 
 ```bash
 git clone https://github.com/diemtrinh05/UniYouth.git
@@ -228,7 +230,7 @@ cd ../mobile-app
 flutter pub get
 ```
 
-Create Python environment for face-service:
+Tạo Python environment cho face-service:
 
 ```bash
 cd ../backend-api/services/face-service
@@ -251,17 +253,17 @@ pip install -r requirements.txt
 
 ## Configuration
 
-Runtime configuration is intentionally empty in public source. Use environment variables, user-secrets or local untracked files.
+Cấu hình runtime trong source public đang để trống có chủ đích. Hãy dùng environment variables, user-secrets hoặc file local không commit.
 
 ### Backend API
 
-File:
+File cấu hình:
 
 ```text
 backend-api/UniYouth.Api/appsettings.json
 ```
 
-Important configuration keys:
+Các key quan trọng:
 
 ```env
 ConnectionStrings__UniYouth=
@@ -296,7 +298,7 @@ PushNotifications__Apns__PrivateKeyPath=
 Cors__AllowedOrigins__0=
 ```
 
-Minimal local PowerShell example:
+Ví dụ cấu hình local bằng PowerShell:
 
 ```powershell
 $env:ConnectionStrings__UniYouth = 'Data Source=localhost;Initial Catalog=UniYouth;Integrated Security=True;Trust Server Certificate=True'
@@ -308,13 +310,13 @@ $env:FaceVerification__Service__BaseUrl = 'http://127.0.0.1:8001'
 
 ### Web Admin
 
-File:
+File cấu hình:
 
 ```text
 web-admin/UniYouth.Admin/appsettings.json
 ```
 
-Important configuration keys:
+Các key quan trọng:
 
 ```env
 ApiSettings__BaseUrl=http://localhost:5160
@@ -329,32 +331,32 @@ CookieSettings__Secure=false
 CookieSettings__SameSite=Strict
 ```
 
-`JwtSettings__SecretKey` must match backend `Jwt__Key`.
+`JwtSettings__SecretKey` phải trùng với `Jwt__Key` của backend.
 
 ### Mobile App
 
-Mobile API config is resolved in:
+Mobile API config được xử lý tại:
 
 ```text
 mobile-app/lib/services/config/api_config_service.dart
 ```
 
-Supported dart defines:
+Các dart define được hỗ trợ:
 
 ```env
 APP_ENV=dev|staging|prod
 API_BASE_URL=
 ```
 
-Rules found in source:
+Quy tắc trong source:
 
-- Default `APP_ENV` is `dev`.
-- Dev mode defaults to `http://localhost:5160`.
-- Dev mode can save a LAN server IP inside the app.
-- `staging` and `prod` require `API_BASE_URL`.
-- Production build rejects loopback hosts such as `localhost`, `127.0.0.1`, `::1`, `10.0.2.2`.
+- `APP_ENV` mặc định là `dev`.
+- Dev mode mặc định dùng `http://localhost:5160`.
+- Dev mode có thể lưu IP backend trong màn hình cấu hình API của app.
+- `staging` và `prod` bắt buộc có `API_BASE_URL`.
+- Bản build production không cho phép loopback host như `localhost`, `127.0.0.1`, `::1`, `10.0.2.2`.
 
-Examples:
+Ví dụ:
 
 ```bash
 flutter run --dart-define=APP_ENV=dev --dart-define=API_BASE_URL=http://localhost:5160
@@ -362,20 +364,20 @@ flutter run --dart-define=APP_ENV=staging --dart-define=API_BASE_URL=https://api
 flutter run --release --dart-define=APP_ENV=prod --dart-define=API_BASE_URL=https://api.example.com
 ```
 
-Need Manual Configuration:
+Cần cấu hình thủ công:
 
-- Firebase platform files are not included in this public repo.
-- Add the correct Firebase configuration files for Android/iOS if push notification is required.
+- Repo public không có Firebase platform files.
+- Nếu cần push notification, hãy thêm file Firebase đúng cho Android/iOS.
 
 ### Face Service
 
-File:
+File cấu hình mẫu:
 
 ```text
 backend-api/services/face-service/.env.example
 ```
 
-Important environment variables:
+Các biến quan trọng:
 
 ```env
 FACE_SERVICE_PROVIDER=DeepFace
@@ -404,114 +406,114 @@ LIVENESS_REVIEW_THRESHOLD=0.35
 
 Database engine: SQL Server.
 
-The main scripts are in:
+Các script chính nằm trong:
 
 ```text
 backend-api/DatabaseScripts/
 ```
 
-The public repo contains full SQL scripts such as:
+Repo public có các script SQL đầy đủ như:
 
 - `UniYouth.sql`
 - `UniYouth_v2.sql`
 - `UniYouth_v3.sql`
 - `UniYouth_v4.sql`
-- dated incremental scripts under `DatabaseScripts/`
+- Các script incremental theo ngày trong `DatabaseScripts/`
 
-`UniYouth.sql` creates database `[UniYouth]` and drops an existing database with the same name before creating it. Review the script before running it on any machine with existing data.
+`UniYouth.sql` tạo database `[UniYouth]` và drop database cùng tên nếu đã tồn tại. Hãy đọc kỹ script trước khi chạy trên máy có dữ liệu thật.
 
-Example using SQL Server tools:
+Ví dụ tạo database bằng SQL Server:
 
 ```sql
 CREATE DATABASE UniYouth;
 ```
 
-Then run the schema/data script appropriate for your environment. The repo does not contain EF Core migration files, so database setup is script-based.
+Sau đó chạy script schema/data phù hợp với môi trường của bạn. Repo hiện không có EF Core migration files, nên setup database đang dựa trên SQL script.
 
-Need Manual Configuration:
+Cần cấu hình thủ công:
 
-- Choose which SQL script is the canonical seed for your environment.
-- Verify initial admin/canbo/student accounts from the SQL script before first login.
-- Configure `ConnectionStrings__UniYouth` to point to the created database.
+- Xác định script SQL chuẩn dùng để khởi tạo database cho môi trường dev.
+- Kiểm tra tài khoản admin/cán bộ/sinh viên seed trong script trước lần đăng nhập đầu tiên.
+- Cấu hình `ConnectionStrings__UniYouth` trỏ đến database đã tạo.
 
 ## Running Project
 
 ### Development
 
-Start face-service:
+Chạy face-service:
 
 ```bash
 cd backend-api/services/face-service
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 ```
 
-Start backend API:
+Chạy backend API:
 
 ```bash
 cd backend-api
 dotnet run --project UniYouth.Api --launch-profile http
 ```
 
-Default backend URLs from `launchSettings.json`:
+URL mặc định của backend trong `launchSettings.json`:
 
 ```text
 http://localhost:5160
 https://localhost:7016
 ```
 
-Start web admin:
+Chạy web admin:
 
 ```bash
 cd web-admin
 dotnet run --project UniYouth.Admin --launch-profile https
 ```
 
-Default admin URLs from `launchSettings.json`:
+URL mặc định của admin trong `launchSettings.json`:
 
 ```text
 http://localhost:5036
 https://localhost:7091
 ```
 
-Start mobile app:
+Chạy mobile app:
 
 ```bash
 cd mobile-app
 flutter run --dart-define=APP_ENV=dev --dart-define=API_BASE_URL=http://localhost:5160
 ```
 
-Android emulator note:
+Ghi chú cho Android emulator:
 
-- The source default uses `localhost` in dev mode.
-- If the emulator cannot reach backend, use the in-app dev API config screen or pass a reachable host.
-- For Android emulator, `10.0.2.2` usually points to host localhost.
+- Source mặc định dùng `localhost` trong dev mode.
+- Nếu emulator không gọi được backend, dùng màn hình dev API config trong app hoặc truyền host có thể truy cập được.
+- Với Android emulator, `10.0.2.2` thường trỏ về localhost của máy host.
 
-### Optional PowerShell Stack Scripts
+### Optional PowerShell Scripts
 
-Scripts exist under:
+Các script nằm trong:
 
 ```text
 backend-api/scripts/
 ```
 
-Relevant scripts:
+Script đáng chú ý:
 
-- `face_stack.ps1`: starts/stops face-service, API and admin in the older separate-repo layout.
-- `public_stack.ps1`: wraps local stack and Cloudflare tunnel.
-- `dev-runtime-env.example.ps1`: example environment variables.
-- `setup_cloudflare_tunnel.ps1`: Cloudflare tunnel setup helper.
+- `face_stack.ps1`: start/stop face-service, API và admin trong layout repo riêng cũ.
+- `public_stack.ps1`: chạy local stack kèm Cloudflare tunnel.
+- `dev-runtime-env.example.ps1`: biến môi trường mẫu.
+- `setup_cloudflare_tunnel.ps1`: hỗ trợ thiết lập Cloudflare tunnel.
 
-Need Manual Configuration:
+Cần cấu hình thủ công:
 
-- These scripts were authored around a sibling admin repo layout. In this monorepo, set `UNIYOUTH_ADMIN_ROOT` to the absolute `web-admin` path if using the scripts.
-- Copy `dev-runtime-env.example.ps1` to an untracked local secret file before adding real values.
+- Các script này được viết theo layout admin nằm ở repo sibling. Trong monorepo này, nếu dùng script hãy set `UNIYOUTH_ADMIN_ROOT` đến đường dẫn tuyệt đối của `web-admin`.
+- Copy `dev-runtime-env.example.ps1` thành file local không commit trước khi điền giá trị thật.
 
 ### Production
 
-Need Manual Configuration:
+Cần cấu hình thủ công:
 
-- No Dockerfile or `docker-compose.yml` exists in the current repo.
-- Production hosting must be configured manually for the API, admin web app, SQL Server, face-service and public HTTPS routing.
+- Repo hiện không có Dockerfile hoặc `docker-compose.yml`.
+- Hosting production cần tự cấu hình cho API, Admin, SQL Server, face-service và HTTPS public routing.
 
 ## Build
 
@@ -538,9 +540,9 @@ cd mobile-app
 flutter build apk --dart-define=APP_ENV=prod --dart-define=API_BASE_URL=https://api.example.com
 ```
 
-Other Flutter targets are present in the repo (`android`, `ios`, `web`, `windows`, `linux`, `macos`), but platform-specific signing/build settings require manual setup.
+Repo có các target Flutter `android`, `ios`, `web`, `windows`, `linux`, `macos`, nhưng signing/build settings theo từng platform cần cấu hình thủ công.
 
-Face-service syntax check:
+Kiểm tra cú pháp face-service:
 
 ```bash
 cd backend-api/services/face-service
@@ -549,14 +551,14 @@ python -m compileall app tools
 
 ## API Documentation
 
-Swagger is enabled only in Development and is mounted at the API root:
+Swagger chỉ bật trong môi trường phát triển (`Development`) và được mount ở root của API:
 
 ```text
 http://localhost:5160/
 http://localhost:5160/swagger/v1/swagger.json
 ```
 
-Main endpoint groups found in controllers:
+Các nhóm endpoint chính trong controllers:
 
 - `POST /api/Auth/login`
 - `POST /api/Auth/refresh`
@@ -616,7 +618,7 @@ SignalR hubs:
 /hubs/support-chat
 ```
 
-Face-service internal endpoints:
+Endpoint nội bộ của face-service:
 
 ```text
 POST /internal/face/verify
@@ -628,43 +630,43 @@ POST /internal/face/liveness/check
 
 Backend API:
 
-- Uses JWT Bearer authentication.
-- `Jwt__Key`, `Jwt__Issuer`, `Jwt__Audience` are required.
-- SignalR hubs can receive token from `access_token` query string.
-- Role-based authorization is used for `Admin`, `CanBo`, `DoanVien`, `HoiVien`.
-- Refresh tokens are persisted in SQL Server.
-- Sensitive endpoints use ASP.NET Core rate limiting.
+- Dùng JWT Bearer authentication.
+- Bắt buộc cấu hình `Jwt__Key`, `Jwt__Issuer`, `Jwt__Audience`.
+- SignalR hubs có thể nhận token từ query string `access_token`.
+- Phân quyền theo role `Admin`, `CanBo`, `DoanVien`, `HoiVien`.
+- Refresh token được lưu trong SQL Server.
+- Endpoint nhạy cảm có ASP.NET Core rate limiting.
 
 Web Admin:
 
-- Stores JWT in HttpOnly cookie `UniYouthAuth`.
-- Uses a global `AdminAuthorizeFilter`.
-- Allows admin/canbo web workflows based on validated JWT claims.
-- `JwtSettings__SecretKey` must match backend `Jwt__Key`.
+- Lưu JWT trong HttpOnly cookie `UniYouthAuth`.
+- Dùng global `AdminAuthorizeFilter`.
+- Cho phép workflow admin/cán bộ dựa trên JWT claims đã validate.
+- `JwtSettings__SecretKey` phải trùng với backend `Jwt__Key`.
 
 Mobile App:
 
-- Stores auth session using `flutter_secure_storage`.
-- Uses Dio interceptors to attach tokens and refresh session.
-- Handles unauthorized session cleanup and redirect to login.
+- Lưu auth session bằng `flutter_secure_storage`.
+- Dùng Dio interceptors để gắn token và refresh session.
+- Tự xử lý cleanup session và điều hướng về login khi unauthorized.
 
 ## Testing
 
-Backend tests:
+Kiểm thử backend:
 
 ```bash
 cd backend-api
 dotnet test
 ```
 
-Web Admin build check:
+Kiểm tra build Web Admin:
 
 ```bash
 cd web-admin
 dotnet build
 ```
 
-Mobile tests:
+Kiểm thử mobile:
 
 ```bash
 cd mobile-app
@@ -672,7 +674,7 @@ flutter analyze
 flutter test
 ```
 
-Face-service syntax check:
+Kiểm tra cú pháp face-service:
 
 ```bash
 cd backend-api/services/face-service
@@ -681,17 +683,17 @@ python -m compileall app tools
 
 ## Docker
 
-Need Manual Configuration:
+Cần cấu hình thủ công:
 
-- No Dockerfile exists in the current repo.
-- No `docker-compose.yml` exists in the current repo.
-- To deploy with Docker, add Dockerfiles for:
+- Repo hiện không có Dockerfile.
+- Repo hiện không có `docker-compose.yml`.
+- Nếu deploy bằng Docker, cần thêm Dockerfile cho:
   - `backend-api/UniYouth.Api`
   - `web-admin/UniYouth.Admin`
   - `backend-api/services/face-service`
-  - SQL Server container or external SQL Server connection
+  - SQL Server container hoặc external SQL Server connection
 
-Example target layout to add later:
+Layout có thể bổ sung sau:
 
 ```text
 docker-compose.yml
@@ -702,66 +704,66 @@ backend-api/services/face-service/Dockerfile
 
 ## Deployment
 
-Need Manual Configuration:
+Cần cấu hình thủ công:
 
-- Provision SQL Server and run database scripts.
-- Publish backend API with required environment variables.
-- Publish Web Admin with `ApiSettings__BaseUrl` pointing to backend API.
-- Publish face-service behind internal network or protected route.
-- Configure HTTPS reverse proxy such as IIS, Nginx, Caddy, Cloudflare Tunnel or a cloud load balancer.
-- Configure persistent storage for `wwwroot/uploads`.
-- Configure Firebase/Gmail/SMTP credentials outside source control.
-- Configure mobile app `API_BASE_URL` for production builds.
+- Provision SQL Server và chạy database scripts.
+- Publish Backend API với đầy đủ environment variables.
+- Publish Web Admin với `ApiSettings__BaseUrl` trỏ đến Backend API.
+- Publish face-service trong internal network hoặc route được bảo vệ.
+- Cấu hình HTTPS reverse proxy như IIS, Nginx, Caddy, Cloudflare Tunnel hoặc cloud load balancer.
+- Cấu hình persistent storage cho `wwwroot/uploads`.
+- Cấu hình Firebase/Gmail/SMTP credentials ngoài source control.
+- Cấu hình `API_BASE_URL` cho bản build production của mobile.
 
-Suggested manual deployment flow:
+Flow deploy thủ công gợi ý:
 
 ```bash
 dotnet publish backend-api/UniYouth.Api -c Release -o publish/api
 dotnet publish web-admin/UniYouth.Admin -c Release -o publish/admin
 ```
 
-Then host:
+Sau đó host:
 
-- API on `https://api.example.com`
-- Admin on `https://admin.example.com`
-- Face-service on an internal URL, for example `http://127.0.0.1:8001`
-- SQL Server on a private network
+- API tại `https://api.example.com`
+- Admin tại `https://admin.example.com`
+- Face-service tại URL nội bộ, ví dụ `http://127.0.0.1:8001`
+- SQL Server trong private network
 
 ## Troubleshooting
 
-### Backend fails with `ConnectionStrings:UniYouth is not configured`
+### Backend reports `ConnectionStrings:UniYouth is not configured`
 
-Cause: backend requires `ConnectionStrings__UniYouth`.
+Nguyên nhân: backend bắt buộc có `ConnectionStrings__UniYouth`.
 
-Fix:
+Cách xử lý:
 
 ```powershell
 $env:ConnectionStrings__UniYouth = 'Data Source=localhost;Initial Catalog=UniYouth;Integrated Security=True;Trust Server Certificate=True'
 ```
 
-### Backend fails with `JWT Key is not configured`
+### Backend reports `JWT Key is not configured`
 
-Cause: backend requires `Jwt__Key`.
+Nguyên nhân: backend bắt buộc có `Jwt__Key`.
 
-Fix:
+Cách xử lý:
 
 ```powershell
 $env:Jwt__Key = 'REPLACE_WITH_A_LONG_RANDOM_SECRET_AT_LEAST_32_CHARS'
 ```
 
-### Admin login works but pages redirect to login or unauthorized
+### Admin login succeeds but redirects to login or unauthorized
 
-Possible causes:
+Nguyên nhân có thể là:
 
-- `JwtSettings__SecretKey` in Admin does not match backend `Jwt__Key`.
-- Backend `Jwt__Issuer` / `Jwt__Audience` differs from Admin `JwtSettings`.
-- Cookie settings are incompatible with HTTP/HTTPS environment.
+- `JwtSettings__SecretKey` trong Admin không trùng backend `Jwt__Key`.
+- Backend `Jwt__Issuer` / `Jwt__Audience` khác Admin `JwtSettings`.
+- Cookie settings không phù hợp môi trường HTTP/HTTPS.
 
-### Admin cannot call backend API
+### Admin cannot call Backend API
 
-Cause: `ApiSettings__BaseUrl` is empty or points to the wrong URL.
+Nguyên nhân: `ApiSettings__BaseUrl` trống hoặc sai URL.
 
-Fix:
+Cách xử lý:
 
 ```powershell
 $env:ApiSettings__BaseUrl = 'http://localhost:5160'
@@ -769,13 +771,13 @@ $env:ApiSettings__BaseUrl = 'http://localhost:5160'
 
 ### Mobile cannot connect to API
 
-Possible causes:
+Nguyên nhân có thể là:
 
-- Backend is not running on port `5160`.
-- Android emulator cannot reach host `localhost`.
-- `APP_ENV=prod` is using a loopback URL, which the app rejects.
+- Backend chưa chạy ở port `5160`.
+- Android emulator không truy cập được host `localhost`.
+- `APP_ENV=prod` đang dùng loopback URL, app sẽ từ chối.
 
-Fix examples:
+Ví dụ xử lý:
 
 ```bash
 flutter run --dart-define=APP_ENV=dev --dart-define=API_BASE_URL=http://10.0.2.2:5160
@@ -784,21 +786,21 @@ flutter run --dart-define=APP_ENV=dev --dart-define=API_BASE_URL=http://192.168.
 
 ### Face verification fails
 
-Possible causes:
+Nguyên nhân có thể là:
 
-- Face-service is not running.
-- `FaceVerification__Service__BaseUrl` is not set.
-- Python dependencies are not installed.
-- DeepFace model warmup failed.
+- Face-service chưa chạy.
+- Chưa set `FaceVerification__Service__BaseUrl`.
+- Chưa cài Python dependencies.
+- DeepFace model warmup thất bại.
 
-Fix:
+Cách xử lý:
 
 ```bash
 cd backend-api/services/face-service
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 ```
 
-Then set:
+Sau đó set:
 
 ```powershell
 $env:FaceVerification__Service__BaseUrl = 'http://127.0.0.1:8001'
@@ -806,34 +808,34 @@ $env:FaceVerification__Service__BaseUrl = 'http://127.0.0.1:8001'
 
 ### Database script deletes existing database
 
-`DatabaseScripts/UniYouth.sql` drops existing `[UniYouth]` before creating it. Review scripts before running them on any machine with existing data.
+`DatabaseScripts/UniYouth.sql` drop database `[UniYouth]` nếu database này đã tồn tại. Hãy đọc kỹ script trước khi chạy trên máy có dữ liệu thật.
 
 ### Port already in use
 
-Default ports:
+Port mặc định:
 
 - Backend API: `5160`, `7016`
 - Web Admin: `5036`, `7091`
 - Face-service: `8001`
 
-Stop the existing process or change launch profile/application URL.
+Dừng process đang dùng port hoặc đổi launch profile/application URL.
 
-### Build failed after clone
+### Build fails after clone
 
-Check:
+Kiểm tra:
 
-- .NET SDK 8 is installed.
-- Flutter SDK supports Dart `^3.10.7`.
-- Python version is 3.11+.
-- Run restore commands before build/test.
-- Runtime secrets are not required for restore, but are required for running backend/admin.
+- Đã cài .NET SDK 8.
+- Flutter SDK hỗ trợ Dart `^3.10.7`.
+- Python version là 3.11+.
+- Đã chạy restore trước khi build/test.
+- Runtime secrets không cần cho restore, nhưng cần khi chạy backend/admin.
 
 ## Contributing
 
-- Work from the monorepo root unless a task explicitly targets a separate private repo.
-- Keep secrets out of source control.
-- Do not commit generated folders such as `bin/`, `obj/`, `.vs/`, `.dart_tool/`, `build/`, `.venv/`, `.python/`.
-- Run relevant checks before submitting changes:
+- Làm việc từ monorepo root trừ khi task yêu cầu rõ repo riêng.
+- Không commit secret vào source control.
+- Không commit thư mục generated như `bin/`, `obj/`, `.vs/`, `.dart_tool/`, `build/`, `.venv/`, `.python/`.
+- Chạy các kiểm tra liên quan trước khi gửi thay đổi:
 
 ```bash
 cd backend-api && dotnet test
@@ -841,8 +843,8 @@ cd ../web-admin && dotnet build
 cd ../mobile-app && flutter analyze && flutter test
 ```
 
-- Keep API DTO changes synchronized between backend, web admin and mobile clients.
-- Update this README when setup, config, endpoints or deployment requirements change.
+- Đồng bộ thay đổi API DTO giữa backend, web admin và mobile client.
+- Cập nhật README khi setup, config, endpoint hoặc deployment requirements thay đổi.
 
 ## Maintainer
 
@@ -851,37 +853,37 @@ cd ../mobile-app && flutter analyze && flutter test
 - GitHub: https://github.com/diemtrinh05
 - Email: diemtrinhdao05@gmail.com
 
-For technical questions, please open an Issue first.
+Nếu có câu hỏi kỹ thuật, vui lòng tạo Issue trước.
 
 ## License
 
-Need Manual Configuration.
+Cần cấu hình thủ công.
 
-No `LICENSE` file is present in the current repo. If the project is intended to use MIT License, add a root `LICENSE` file containing the MIT license text.
+Repo hiện chưa có file `LICENSE`. Nếu dự án dùng MIT License, hãy thêm file `LICENSE` ở root repo với nội dung MIT License.
 
 ## Documentation Status
 
-Estimated completeness: **82%**
+Mức độ hoàn thiện ước tính: **82%**
 
-Covered:
+Đã bao phủ:
 
-- Actual languages, frameworks and packages found in source.
-- Monorepo structure.
-- Backend, Admin, Mobile and Face-service setup.
-- Runtime configuration keys found in `appsettings.json`, Dart config and `.env.example`.
-- SQL Server script-based database setup.
-- Main API endpoint groups from controllers.
-- Authentication model for backend, admin and mobile.
-- Build/test commands.
-- Docker/deployment gaps marked as `Need Manual Configuration`.
+- Ngôn ngữ, framework và package thực tế trong source.
+- Cấu trúc monorepo.
+- Setup Backend, Admin, Mobile và Face-service.
+- Các key cấu hình runtime từ `appsettings.json`, Dart config và `.env.example`.
+- Thiết lập database dựa trên SQL Server scripts.
+- Các nhóm endpoint chính từ controllers.
+- Mô hình xác thực của backend, admin và mobile.
+- Lệnh build/test.
+- Các thiếu sót Docker/deployment đã được đánh dấu là cần cấu hình thủ công.
 
-Still missing / needs project owner input:
+Còn thiếu / cần project owner bổ sung:
 
-- Canonical database initialization script and seed account credentials.
-- Production domain names and deployment topology.
-- Firebase project files and push notification credentials.
-- SMTP/Gmail credentials and preferred email provider.
+- Script database chuẩn để khởi tạo môi trường và tài khoản seed.
+- Domain production và topology triển khai.
+- Firebase project files và push notification credentials.
+- SMTP/Gmail credentials và email provider chính thức.
 - Google Maps API key.
-- Official license decision and `LICENSE` file.
-- Dockerfiles/docker-compose if container deployment is required.
-- Exact face-service hosting model for production.
+- Quyết định giấy phép chính thức và file `LICENSE`.
+- Dockerfile/docker-compose nếu cần container deployment.
+- Mô hình hosting face-service cho production.
